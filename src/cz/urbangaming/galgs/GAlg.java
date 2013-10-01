@@ -16,7 +16,7 @@ public class GAlg extends Activity {
             // Tell the surface view we want to create an OpenGL ES 2.0-compatible
             // context, and set an OpenGL ES 2.0-compatible renderer.
             mGLSurfaceView.setEGLContextClientVersion(2);
-            mGLSurfaceView.setRenderer(new GLES20TriangleRenderer(this));
+            mGLSurfaceView.setRenderer(new PointsRenderer(this));
         } else {
             // error
         }
