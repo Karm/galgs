@@ -12,13 +12,21 @@ import android.util.Log;
 
 class Scene {
 
+
+    
+    
     /*private final String vertexShaderCode =
             "attribute vec4 vPosition;" +
                     "void main() {" +
                     "  gl_Position = vPosition;" +
                     " gl_PointSize = 3.0;" +
                     "}";*/
-    private  String vertexShaderCode = null;
+    private final String    vertexShaderCode = "uniform    mat4        uMVPMatrix;" +
+            "attribute  vec4        vPosition;" +
+            "void main() {" +
+            "  gl_Position = uMVPMatrix * vPosition;" +
+            " gl_PointSize = 4.0;" +
+            "}";
     private final String fragmentShaderCode =
             "precision mediump float;" +
                     "uniform vec4 vColor;" +
@@ -51,19 +59,21 @@ class Scene {
         this.pointsRenderer = pointsRenderer; 
         Log.d(GAlg.DEBUG_TAG, "X Dimension is:" + pointsRenderer.getDisplayDimension().x);
         Log.d(GAlg.DEBUG_TAG, "Y Dimension is:" + pointsRenderer.getDisplayDimension().y);
-
+/*
         vertexShaderCode =
                 "attribute vec4 vPosition;\n" +
                         "void main() {\n" +
                         "  gl_Position = vPosition;\n" +
-                        "  /*gl_Position = vec4(" +
+                        "  !!!gl_Position = vec4(" +
                         "                       vPosition.x *  2.0 / " + pointsRenderer.getDisplayDimension().x + " - 1.0," +
                         "                       vPosition.y * -2.0 / " + pointsRenderer.getDisplayDimension().y + " + 1.0," +
                         "                       vPosition.z," +
                         "                       1.0" +
-                        "                      );*/\n" +
+                        "                      );!!!!\n" +
                         "    gl_PointSize = 5.0;\n" +
-                        "}\n";
+                        "}\n";*/
+        
+     
 
         newVertexBufferToDraw();
 
@@ -90,7 +100,7 @@ class Scene {
         GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertexCount, vertexBuffer);
     }
 
-   private void loadOrthoMatrix(float[] matrix, float left, float right, float bottom, float top, float near, float far) {
+  /* private void loadOrthoMatrix(float[] matrix, float left, float right, float bottom, float top, float near, float far) {
         float r_l = right - left;
         float t_b = top - bottom;
         float f_n = far - near;
@@ -117,9 +127,10 @@ class Scene {
         matrix[13] = 0.0f;
         matrix[14] = 0.0f;
         matrix[15] = 1.0f;
-    }
+    }*/
     
     public Vec2f muhehe(Vec2f touch) {
+        /*
         // 2 / right-left       0                   0               -(right+left / right-left)
         // 0               2/(top-bottom)           0               -(top+bottom / top-bottom)
         // 0                    0            -2 / farVal-nearVal    -(farVal+nearVal / farVal-nearVal)
@@ -147,13 +158,18 @@ class Scene {
         Matrix.orthoM(matrix, 0,     0, 960,  0,  540, -1f, 1f);
 
         float resultVec[] = new float[4];
-float rhsVec[] = new float[] {touch.X(), touch.Y(),0,0};
-Log.d(GAlg.DEBUG_TAG, "RESULT VECTOR BEFORE: " + Arrays.toString(resultVec));
+       float rhsVec[] = new float[] {touch.X(), touch.Y(),0,0};
+        Log.d(GAlg.DEBUG_TAG, "RESULT VECTOR BEFORE: " + Arrays.toString(resultVec));
 
         Matrix.multiplyMV(resultVec, 0, matrix, 0, rhsVec, 0);
         Log.d(GAlg.DEBUG_TAG, "RESULT VECTOR AFTER: " + Arrays.toString(resultVec));
 
-        return new Vec2f(resultVec[0], resultVec[1]);
+        //return new Vec2f(resultVec[0], resultVec[1]);
+        
+        return new Vec2f(rhsVec[0], rhsVec[1]);
+*/
+        
+        return touch;
 
     }
 
@@ -192,6 +208,16 @@ Log.d(GAlg.DEBUG_TAG, "RESULT VECTOR BEFORE: " + Arrays.toString(resultVec));
         // Set color for drawing the scene
         GLES20.glUniform4fv(mColorHandle, 1, color, 0);
 
+        
+        
+        // Get handle to shape's transformation matrix
+        int mtrxhandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
+ 
+        // Apply the projection and view transformation
+        GLES20.glUniformMatrix4fv(mtrxhandle, 1, false, pointsRenderer.getMtrxProjectionAndView(), 0);
+        
+        
+        
         // Draw the scene
         GLES20.glDrawArrays(GLES20.GL_POINTS, 0, vertexCount);
 

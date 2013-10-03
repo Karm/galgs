@@ -10,12 +10,15 @@ import android.content.Context;
 import android.graphics.Point;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
 import android.view.WindowManager;
 
 class PointsRenderer implements GLSurfaceView.Renderer {
 
     private Point displayDimension = null;
-
+    public final float[] mtrxProjection = new float[16];
+    public final float[] mtrxView = new float[16];
+    public final float[] mtrxProjectionAndView = new float[16];
     public PointsRenderer(Context context) {
         super();
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -48,6 +51,33 @@ class PointsRenderer implements GLSurfaceView.Renderer {
         // float ratio = (float) width / height;
         // Matrix.frustumM(mProjMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
         // GLU.gluOrtho2D(unused,0,width,0,height);
+        
+     // Clear our matrices
+        for(int i=0;i<16;i++)
+        {
+            mtrxProjection[i] = 0.0f;
+            mtrxView[i] = 0.0f;
+            mtrxProjectionAndView[i] = 0.0f;
+        }
+ 
+        // Setup our screen width and height for normal sprite translation.
+        //Matrix.orthoM(mtrxProjection, 0, 0f, width, 0.0f, height, 0, 50);
+
+        final float left = 0;
+        final float right = width;
+        final float bottom = height;
+        final float top = 0;
+        final float near = -1f;
+        final float far = 1f;
+
+        Matrix.orthoM(mtrxProjection, 0, left, right, bottom,top , near, far);
+        
+        
+        // Set the camera position (View matrix)
+        Matrix.setLookAtM(mtrxView, 0, 0f, 0f,  1f,   0f, 0f, 0f, 0f, 1.0f, 0.0f);
+ 
+        // Calculate the projection and view transformation
+        Matrix.multiplyMM(mtrxProjectionAndView, 0, mtrxProjection, 0, mtrxView, 0);
     }
 
     public static int loadShader(int type, String shaderCode) {
@@ -77,6 +107,10 @@ class PointsRenderer implements GLSurfaceView.Renderer {
 
     public void addVertex(Vec2f coords) {
         mScene.addVertex(coords);
+    }
+
+    public float[] getMtrxProjectionAndView() {
+        return mtrxProjectionAndView;
     }
 
 }
