@@ -8,6 +8,8 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 
 /**
@@ -17,7 +19,12 @@ import android.view.MotionEvent;
  */
 public class GAlg extends Activity {
     public static final String DEBUG_TAG = "KARM";
+
     private PointsRenderer pointsRenderer = null;
+    private static final int EDIT_MODE = 0;
+    private static int ADDING_POINTS = 0;
+    private static int REMOVING_POINTS = 1;
+    private int pointsEditMode = ADDING_POINTS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,9 +37,40 @@ public class GAlg extends Activity {
             pointsRenderer = new PointsRenderer(this);
             mGLSurfaceView.setRenderer(pointsRenderer);
         } else {
-            // error
+            // Handle as an unrecoverable error and leave the activity somehow...
         }
+        // registerForContextMenu(getListView());
         setContentView(mGLSurfaceView);
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return true;
+    }
+
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        menu.clear();
+        if (pointsEditMode == ADDING_POINTS) {
+            menu.add(0, EDIT_MODE, 0, R.string.remove_points);
+        } else {
+            menu.add(0, EDIT_MODE, 0, R.string.add_points);
+        }
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        boolean itemHandled = true;
+        switch (item.getItemId()) {
+        case EDIT_MODE:
+            pointsEditMode = (pointsEditMode == ADDING_POINTS) ? REMOVING_POINTS : ADDING_POINTS;
+            break;
+
+        default:
+            itemHandled = false;
+            break;
+        }
+
+        return itemHandled;
     }
 
     private boolean detectOpenGLES20() {
