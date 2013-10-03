@@ -10,6 +10,11 @@ import android.support.v4.view.MotionEventCompat;
 import android.util.Log;
 import android.view.MotionEvent;
 
+/**
+ * 
+ * @author Michal Karm Babacek
+ * 
+ */
 public class GAlg extends Activity {
     public static final String DEBUG_TAG = "KARM";
     private PointsRenderer pointsRenderer = null;
@@ -38,7 +43,7 @@ public class GAlg extends Activity {
 
     @Override
     protected void onResume() {
-        // Ideally a game should implement onResume() and onPause()
+        // Ideally a application should implement onResume() and onPause()
         // to take appropriate action when the activity looses focus
         super.onResume();
         mGLSurfaceView.onResume();
@@ -54,9 +59,7 @@ public class GAlg extends Activity {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
         int action = MotionEventCompat.getActionMasked(event);
-
         switch (action) {
         case (MotionEvent.ACTION_DOWN):
             float x = event.getAxisValue(MotionEvent.AXIS_X);
@@ -74,8 +77,7 @@ public class GAlg extends Activity {
             Log.d(DEBUG_TAG, "Action was CANCEL");
             return true;
         case (MotionEvent.ACTION_OUTSIDE):
-            Log.d(DEBUG_TAG, "Movement occurred outside bounds " +
-                    "of current screen element");
+            Log.d(DEBUG_TAG, "Movement occurred outside bounds of current screen element");
             return true;
         default:
             return super.onTouchEvent(event);

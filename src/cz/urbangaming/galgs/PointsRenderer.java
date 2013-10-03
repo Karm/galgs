@@ -13,12 +13,18 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.view.WindowManager;
 
+/**
+ * 
+ * @author Michal Karm Babacek
+ * 
+ */
 class PointsRenderer implements GLSurfaceView.Renderer {
 
     private Point displayDimension = null;
     public final float[] mtrxProjection = new float[16];
     public final float[] mtrxView = new float[16];
     public final float[] mtrxProjectionAndView = new float[16];
+
     public PointsRenderer(Context context) {
         super();
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -26,7 +32,7 @@ class PointsRenderer implements GLSurfaceView.Renderer {
         wm.getDefaultDisplay().getSize(displayDimension);
     }
 
-    private Scene mScene;
+    private Scene mScene = null;
 
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
@@ -48,21 +54,15 @@ class PointsRenderer implements GLSurfaceView.Renderer {
         // Adjust the viewport based on geometry changes,
         // such as screen rotation
         GLES20.glViewport(0, 0, width, height);
-        // float ratio = (float) width / height;
-        // Matrix.frustumM(mProjMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
-        // GLU.gluOrtho2D(unused,0,width,0,height);
-        
-     // Clear our matrices
-        for(int i=0;i<16;i++)
-        {
+        // Clear our matrices
+        // TODO: Hmm, let's do it better...
+        for (int i = 0; i < 16; i++) {
             mtrxProjection[i] = 0.0f;
             mtrxView[i] = 0.0f;
             mtrxProjectionAndView[i] = 0.0f;
         }
- 
-        // Setup our screen width and height for normal sprite translation.
-        //Matrix.orthoM(mtrxProjection, 0, 0f, width, 0.0f, height, 0, 50);
 
+        // Screen to the drawing coordinates
         final float left = 0;
         final float right = width;
         final float bottom = height;
@@ -70,12 +70,11 @@ class PointsRenderer implements GLSurfaceView.Renderer {
         final float near = -1f;
         final float far = 1f;
 
-        Matrix.orthoM(mtrxProjection, 0, left, right, bottom,top , near, far);
-        
-        
+        Matrix.orthoM(mtrxProjection, 0, left, right, bottom, top, near, far);
+
         // Set the camera position (View matrix)
-        Matrix.setLookAtM(mtrxView, 0, 0f, 0f,  1f,   0f, 0f, 0f, 0f, 1.0f, 0.0f);
- 
+        Matrix.setLookAtM(mtrxView, 0, 0f, 0f, 1f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mtrxProjectionAndView, 0, mtrxProjection, 0, mtrxView, 0);
     }
@@ -91,26 +90,15 @@ class PointsRenderer implements GLSurfaceView.Renderer {
     }
 
     public static float[] floatVectorToArray(Vector<Float> floats) {
-        //Log.d(GAlg.DEBUG_TAG, "FUCKINF INPUT: " + floats.toString());
         float[] ret = new float[floats.size()];
         Iterator<Float> iterator = floats.iterator();
         for (int i = 0; i < ret.length; i++) {
             ret[i] = iterator.next().floatValue();
         }
-        //Log.d(GAlg.DEBUG_TAG, "FUCKINF OUTPUT: " + Arrays.toString(ret));
         return ret;
-    }
-
-    public Point getDisplayDimension() {
-        return displayDimension;
     }
 
     public void addVertex(Vec2f coords) {
         mScene.addVertex(coords);
     }
-
-    public float[] getMtrxProjectionAndView() {
-        return mtrxProjectionAndView;
-    }
-
 }
