@@ -3,20 +3,22 @@ package cz.urbangaming.galgs;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 import java.util.Vector;
 
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 import android.util.Log;
 
 class Scene {
 
-    private final String vertexShaderCode =
+    /*private final String vertexShaderCode =
             "attribute vec4 vPosition;" +
                     "void main() {" +
                     "  gl_Position = vPosition;" +
                     " gl_PointSize = 3.0;" +
-                    "}";
-
+                    "}";*/
+    private  String vertexShaderCode = null;
     private final String fragmentShaderCode =
             "precision mediump float;" +
                     "uniform vec4 vColor;" +
@@ -42,16 +44,26 @@ class Scene {
     private final int vertexStride = COORDS_PER_VERTEX * 4; // bytes per vertex
 
     // Set color with red, green, blue and alpha (opacity) values
-    float color[] = { 0.63671875f, 0.76953125f, 0.22265625f, 1.0f };
+    float color[] = { 1f, 0f, 0f, 1.0f };
     private PointsRenderer pointsRenderer = null;
 
     public Scene(PointsRenderer pointsRenderer) {
-        this.pointsRenderer = pointsRenderer; /*
-                                               * // initialize vertex byte buffer for shape coordinates ByteBuffer bb = ByteBuffer.allocateDirect( // (number of coordinate values * 4 bytes per float) sceneCoords.length * 4); // use the device hardware's native byte order
-                                               * bb.order(ByteOrder.nativeOrder());
-                                               * 
-                                               * // create a floating point buffer from the ByteBuffer vertexBuffer = bb.asFloatBuffer(); // add the coordinates to the FloatBuffer vertexBuffer.put(sceneCoords); // set the buffer to read the first coordinate vertexBuffer.position(0);
-                                               */
+        this.pointsRenderer = pointsRenderer; 
+        Log.d(GAlg.DEBUG_TAG, "X Dimension is:" + pointsRenderer.getDisplayDimension().x);
+        Log.d(GAlg.DEBUG_TAG, "Y Dimension is:" + pointsRenderer.getDisplayDimension().y);
+
+        vertexShaderCode =
+                "attribute vec4 vPosition;\n" +
+                        "void main() {\n" +
+                        "  gl_Position = vPosition;\n" +
+                        "  /*gl_Position = vec4(" +
+                        "                       vPosition.x *  2.0 / " + pointsRenderer.getDisplayDimension().x + " - 1.0," +
+                        "                       vPosition.y * -2.0 / " + pointsRenderer.getDisplayDimension().y + " + 1.0," +
+                        "                       vPosition.z," +
+                        "                       1.0" +
+                        "                      );*/\n" +
+                        "    gl_PointSize = 5.0;\n" +
+                        "}\n";
 
         newVertexBufferToDraw();
 
@@ -78,12 +90,58 @@ class Scene {
         GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertexCount, vertexBuffer);
     }
 
+   private void loadOrthoMatrix(float[] matrix, float left, float right, float bottom, float top, float near, float far) {
+        float r_l = right - left;
+        float t_b = top - bottom;
+        float f_n = far - near;
+        float tx = - (right + left) / (right - left);
+        float ty = - (top + bottom) / (top - bottom);
+        float tz = - (far + near) / (far - near);
+
+        matrix[0] = 2.0f / r_l;
+        matrix[1] = 0.0f;
+        matrix[2] = 0.0f;
+        matrix[3] = tx;
+
+        matrix[4] = 0.0f;
+        matrix[5] = 2.0f / t_b;
+        matrix[6] = 0.0f;
+        matrix[7] = ty;
+
+        matrix[8] = 0.0f;
+        matrix[9] = 0.0f;
+        matrix[10] = 2.0f / f_n;
+        matrix[11] = tz;
+
+        matrix[12] = 0.0f;
+        matrix[13] = 0.0f;
+        matrix[14] = 0.0f;
+        matrix[15] = 1.0f;
+    }
+    
     public Vec2f muhehe(Vec2f touch) {
-        // 2 / right-left 0 0 -(right+left / right-left)
-        // 0 2/(top-bottom) 0 -(top+bottom / top-bottom)
-        // 0 0 -2 / farVal-nearVal -(farVal+nearVal / farVal-nearVal)
-        // 0 0 0 1
-        return new Vec2f(touch.X() / 1000, touch.Y() / 1000);
+        // 2 / right-left       0                   0               -(right+left / right-left)
+        // 0               2/(top-bottom)           0               -(top+bottom / top-bottom)
+        // 0                    0            -2 / farVal-nearVal    -(farVal+nearVal / farVal-nearVal)
+        // 0                    0                   0                           1
+        
+        
+        float matrix[] = new float[16];
+        loadOrthoMatrix(matrix, 0f, 960f, 0f, 540f, -1f, 1f); 
+        
+        
+        Log.d(GAlg.DEBUG_TAG, "FUCKINF MATRIXXXX OUTPUT: " + Arrays.toString(matrix));
+
+        //Matrix.orthoM(m, mOffset, left, right, bottom, top, near, far);
+        float resultVec[] = new float[4];
+float rhsVec[] = new float[] {touch.X(), touch.Y(),0,0};
+Log.d(GAlg.DEBUG_TAG, "RESULT VECTOR BEFORE: " + Arrays.toString(resultVec));
+
+        Matrix.multiplyMV(resultVec, 0, matrix, 0, rhsVec, 0);
+        Log.d(GAlg.DEBUG_TAG, "RESULT VECTOR AFTER: " + Arrays.toString(resultVec));
+
+        return new Vec2f(resultVec[0], resultVec[1]);
+
     }
 
     private void newVertexBufferToDraw() {

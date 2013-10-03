@@ -1,6 +1,5 @@
 package cz.urbangaming.galgs;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -11,7 +10,6 @@ import android.content.Context;
 import android.graphics.Point;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.util.Log;
 import android.view.WindowManager;
 
 class PointsRenderer implements GLSurfaceView.Renderer {
@@ -63,13 +61,13 @@ class PointsRenderer implements GLSurfaceView.Renderer {
     }
 
     public static float[] floatVectorToArray(Vector<Float> floats) {
-        Log.d(GAlg.DEBUG_TAG, "FUCKINF INPUT: " + floats.toString());
+        //Log.d(GAlg.DEBUG_TAG, "FUCKINF INPUT: " + floats.toString());
         float[] ret = new float[floats.size()];
         Iterator<Float> iterator = floats.iterator();
         for (int i = 0; i < ret.length; i++) {
             ret[i] = iterator.next().floatValue();
         }
-        Log.d(GAlg.DEBUG_TAG, "FUCKINF OUTPUT: " + Arrays.toString(ret));
+        //Log.d(GAlg.DEBUG_TAG, "FUCKINF OUTPUT: " + Arrays.toString(ret));
         return ret;
     }
 
