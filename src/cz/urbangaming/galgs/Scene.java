@@ -127,12 +127,25 @@ class Scene {
         
         
         float matrix[] = new float[16];
-        loadOrthoMatrix(matrix, 0f, 960f, 0f, 540f, -1f, 1f); 
+       // loadOrthoMatrix(matrix, 0f, 960f, 0f, 540f, 1f, -1f); 
         
         
         Log.d(GAlg.DEBUG_TAG, "FUCKINF MATRIXXXX OUTPUT: " + Arrays.toString(matrix));
-
         //Matrix.orthoM(m, mOffset, left, right, bottom, top, near, far);
+        
+        //int useForOrtho = Math.min( width, height );
+
+     // TODO: Is this wrong?
+         //Matrix.orthoM( mVMatrix, 0, -useForOrtho / 2, useForOrtho / 2,
+          //          -useForOrtho / 2, useForOrtho / 2, 0.1f, 100f );
+         
+         //Matrix.orthoM(matrix, 0,     -960f/2, 960f/2,  -540f/2,  540f/2, -1f, 1f);
+        
+
+        //Matrix.orthoM(matrix, 0,     0f, 960f,  0f,  540f, -1f, 1f);
+        
+        Matrix.orthoM(matrix, 0,     0, 960,  0,  540, -1f, 1f);
+
         float resultVec[] = new float[4];
 float rhsVec[] = new float[] {touch.X(), touch.Y(),0,0};
 Log.d(GAlg.DEBUG_TAG, "RESULT VECTOR BEFORE: " + Arrays.toString(resultVec));
