@@ -21,9 +21,14 @@ public class GAlg extends Activity {
     public static final String DEBUG_TAG = "KARM";
 
     private PointsRenderer pointsRenderer = null;
+    
     private static final int EDIT_MODE = 0;
-    private static int ADDING_POINTS = 0;
-    private static int REMOVING_POINTS = 1;
+    private static final int REMOVE_ALL_POINTS = 1;
+    private static final int ADD_RANDOM_POINTS = 2;
+
+    private static final int ADDING_POINTS = 0;
+    private static final int REMOVING_POINTS = 1;
+    
     private int pointsEditMode = ADDING_POINTS;
     //TODO: THIS IS SO EPICLY WRONG! I must calculate it accordingly to display's density...
     public static int FINGER_ACCURACY = 15;
@@ -57,6 +62,8 @@ public class GAlg extends Activity {
         } else {
             menu.add(0, EDIT_MODE, 0, R.string.add_points);
         }
+        menu.add(0, REMOVE_ALL_POINTS, 1, R.string.remove_all_points);
+        menu.add(0, ADD_RANDOM_POINTS, 2, R.string.generate_random_points);
         return true;
     }
 
@@ -65,6 +72,12 @@ public class GAlg extends Activity {
         switch (item.getItemId()) {
         case EDIT_MODE:
             pointsEditMode = (pointsEditMode == ADDING_POINTS) ? REMOVING_POINTS : ADDING_POINTS;
+            break;
+        case REMOVE_ALL_POINTS:
+            pointsRenderer.clearScene();
+            break;
+        case ADD_RANDOM_POINTS:
+            
             break;
 
         default:

@@ -106,4 +106,8 @@ class PointsRenderer implements GLSurfaceView.Renderer {
     public void addVertex(Vec2f coords) {
         mScene.addVertex(coords);
     }
+
+    public void clearScene() {
+        mScene.clearScene();
+    }
 }

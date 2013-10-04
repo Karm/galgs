@@ -54,6 +54,12 @@ class Scene {
         GLES20.glLinkProgram(mProgram); // create OpenGL program executables
     }
 
+    public void clearScene() {
+        sceneCoords.clear();
+        newVertexBufferToDraw();
+        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertexCount, vertexBuffer);
+    }
+
     public void addVertex(Vec2f coords) {
         sceneCoords.add(coords.X());
         sceneCoords.add(coords.Y());
@@ -85,7 +91,7 @@ class Scene {
 
     private boolean isInRectangle(double centerX, double centerY, double size, double x, double y) {
         return x >= centerX - size && x <= centerX + size &&
-               y >= centerY - size && y <= centerY + size;
+                y >= centerY - size && y <= centerY + size;
     }
 
     private void newVertexBufferToDraw() {
@@ -133,4 +139,5 @@ class Scene {
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
     }
+
 }
