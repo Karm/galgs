@@ -3,7 +3,7 @@ package cz.urbangaming.galgs;
 /**
  * 
  * @author Michal Karm Babacek
- *
+ * 
  */
 public class Vec2f {
     private float x;

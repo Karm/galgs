@@ -21,17 +21,25 @@ public class GAlg extends Activity {
     public static final String DEBUG_TAG = "KARM";
 
     private PointsRenderer pointsRenderer = null;
-    
+
     private static final int EDIT_MODE = 0;
     private static final int REMOVE_ALL_POINTS = 1;
     private static final int ADD_RANDOM_POINTS = 2;
 
     private static final int ADDING_POINTS = 0;
     private static final int REMOVING_POINTS = 1;
-    
+
     private int pointsEditMode = ADDING_POINTS;
-    //TODO: THIS IS SO EPICLY WRONG! I must calculate it accordingly to display's density...
-    public static int FINGER_ACCURACY = 15;
+
+    // /////// Some settings: Move it outside... /////////
+
+    // TODO: THIS IS SO EPICLY WRONG! I must calculate it accordingly to display's density...
+    public static final int FINGER_ACCURACY = 15;
+    public static final float POINT_SIZE = 5f;
+    // No, it's not very conveniet to have points too close to boundaries
+    //public static final int BORDER_POINT_POSITION = Math.round(POINT_SIZE / 2);
+    public static final int BORDER_POINT_POSITION = 10;
+    public static final int HOW_MANY_POINTS_GENERATE = 10;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +49,7 @@ public class GAlg extends Activity {
             // Tell the surface view we want to create an OpenGL ES 2.0-compatible
             // context, and set an OpenGL ES 2.0-compatible renderer.
             mGLSurfaceView.setEGLContextClientVersion(2);
-            pointsRenderer = new PointsRenderer(this);
+            pointsRenderer = new PointsRenderer();
             mGLSurfaceView.setRenderer(pointsRenderer);
         } else {
             // Handle as an unrecoverable error and leave the activity somehow...
@@ -77,7 +85,7 @@ public class GAlg extends Activity {
             pointsRenderer.clearScene();
             break;
         case ADD_RANDOM_POINTS:
-            
+            pointsRenderer.addRandomPoints();
             break;
 
         default:
@@ -118,7 +126,7 @@ public class GAlg extends Activity {
             float x = event.getAxisValue(MotionEvent.AXIS_X);
             float y = event.getAxisValue(MotionEvent.AXIS_Y);
             Log.d(DEBUG_TAG, "Action was DOWN [" + x + "," + y + "]");
-            if(pointsEditMode == ADDING_POINTS) {
+            if (pointsEditMode == ADDING_POINTS) {
                 pointsRenderer.addVertex(new Vec2f(x, y));
             } else {
                 pointsRenderer.removeVertex(new Vec2f(x, y));

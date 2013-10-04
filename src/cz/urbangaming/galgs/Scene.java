@@ -15,13 +15,12 @@ import android.util.Log;
  * 
  */
 class Scene {
-
     private final String vertexShaderCode =
             "uniform   mat4 uMVPMatrix;" +
                     "attribute vec4 vPosition;" +
                     "void main() {" +
                     "    gl_Position = uMVPMatrix * vPosition;" +
-                    "    gl_PointSize = 5.0;" +
+                    "    gl_PointSize = " + GAlg.POINT_SIZE + ";" +
                     "}";
     private final String fragmentShaderCode =
             "precision mediump float;" +
@@ -60,6 +59,16 @@ class Scene {
         GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertexCount, vertexBuffer);
     }
 
+    public void addRandomPoints() {
+        sceneCoords.addAll(Utils.generateSomeVertices(GAlg.HOW_MANY_POINTS_GENERATE,
+                GAlg.BORDER_POINT_POSITION,
+                GAlg.BORDER_POINT_POSITION,
+                pointsRenderer.getSurfaceWidth() - GAlg.BORDER_POINT_POSITION,
+                pointsRenderer.getSurfaceHeight() - GAlg.BORDER_POINT_POSITION));
+        newVertexBufferToDraw();
+        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertexCount, vertexBuffer);
+    }
+
     public void addVertex(Vec2f coords) {
         sceneCoords.add(coords.X());
         sceneCoords.add(coords.Y());
@@ -75,23 +84,15 @@ class Scene {
             float x = sceneCoords.get(i);
             float y = sceneCoords.get(i + 1);
             float z = sceneCoords.get(i + 2);
-            if (!isInRectangle(coords.X(), coords.Y(), GAlg.FINGER_ACCURACY, x, y)) {
-                Log.d(GAlg.DEBUG_TAG, "POINT[" + Math.round(x) + "," + Math.round(y) + "] NOT IN CIRCLE(x" + Math.round(coords.X()) + ",y" + Math.round(coords.Y()) + ",r" + GAlg.FINGER_ACCURACY + ")");
+            if (!Utils.isInRectangle(coords.X(), coords.Y(), GAlg.FINGER_ACCURACY, x, y)) {
                 newSceneCoords.add(x);
                 newSceneCoords.add(y);
                 newSceneCoords.add(z);
-            } else {
-                Log.d(GAlg.DEBUG_TAG, "POINT[" + Math.round(x) + "," + Math.round(y) + "] IN CIRCLE(x" + Math.round(coords.X()) + ",y" + Math.round(coords.Y()) + ",r" + GAlg.FINGER_ACCURACY + ")");
             }
         }
         sceneCoords = newSceneCoords;
         newVertexBufferToDraw();
         GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertexCount, vertexBuffer);
-    }
-
-    private boolean isInRectangle(double centerX, double centerY, double size, double x, double y) {
-        return x >= centerX - size && x <= centerX + size &&
-                y >= centerY - size && y <= centerY + size;
     }
 
     private void newVertexBufferToDraw() {

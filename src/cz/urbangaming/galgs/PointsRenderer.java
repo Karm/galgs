@@ -1,18 +1,14 @@
 package cz.urbangaming.galgs;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import android.content.Context;
-import android.graphics.Point;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.view.WindowManager;
 
 /**
  * 
@@ -21,17 +17,12 @@ import android.view.WindowManager;
  */
 class PointsRenderer implements GLSurfaceView.Renderer {
 
-    private Point displayDimension = null;
     public final float[] mtrxProjection = new float[16];
     public final float[] mtrxView = new float[16];
     public final float[] mtrxProjectionAndView = new float[16];
 
-    public PointsRenderer(Context context) {
-        super();
-        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        displayDimension = new Point();
-        wm.getDefaultDisplay().getSize(displayDimension);
-    }
+    private int surfaceWidth = 0;
+    private int surfaceHeight = 0;
 
     private Scene mScene = null;
 
@@ -52,6 +43,10 @@ class PointsRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceChanged(GL10 unused, int width, int height) {
+        // Hmm...is this singlethreaded, right?
+        this.surfaceWidth = width;
+        this.surfaceHeight = height;
+
         // Adjust the viewport based on geometry changes,
         // such as screen rotation
         GLES20.glViewport(0, 0, width, height);
@@ -110,4 +105,17 @@ class PointsRenderer implements GLSurfaceView.Renderer {
     public void clearScene() {
         mScene.clearScene();
     }
+
+    public void addRandomPoints() {
+        mScene.addRandomPoints();
+    }
+
+    public int getSurfaceWidth() {
+        return surfaceWidth;
+    }
+
+    public int getSurfaceHeight() {
+        return surfaceHeight;
+    }
+
 }
