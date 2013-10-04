@@ -25,6 +25,8 @@ public class GAlg extends Activity {
     private static int ADDING_POINTS = 0;
     private static int REMOVING_POINTS = 1;
     private int pointsEditMode = ADDING_POINTS;
+    //TODO: THIS IS SO EPICLY WRONG! I must calculate it accordingly to display's density...
+    public static int FINGER_ACCURACY = 15;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,7 +105,11 @@ public class GAlg extends Activity {
             float x = event.getAxisValue(MotionEvent.AXIS_X);
             float y = event.getAxisValue(MotionEvent.AXIS_Y);
             Log.d(DEBUG_TAG, "Action was DOWN [" + x + "," + y + "]");
-            pointsRenderer.addVertex(new Vec2f(x, y));
+            if(pointsEditMode == ADDING_POINTS) {
+                pointsRenderer.addVertex(new Vec2f(x, y));
+            } else {
+                pointsRenderer.removeVertex(new Vec2f(x, y));
+            }
             return true;
         case (MotionEvent.ACTION_MOVE):
             Log.d(DEBUG_TAG, "Action was MOVE");

@@ -1,7 +1,8 @@
 package cz.urbangaming.galgs;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -89,13 +90,17 @@ class PointsRenderer implements GLSurfaceView.Renderer {
         return shader;
     }
 
-    public static float[] floatVectorToArray(Vector<Float> floats) {
-        float[] ret = new float[floats.size()];
-        Iterator<Float> iterator = floats.iterator();
+    public static float[] floatVectorToArray(List<Float> sceneCoords) {
+        float[] ret = new float[sceneCoords.size()];
+        Iterator<Float> iterator = sceneCoords.iterator();
         for (int i = 0; i < ret.length; i++) {
             ret[i] = iterator.next().floatValue();
         }
         return ret;
+    }
+
+    public void removeVertex(Vec2f coords) {
+        mScene.removeVertex(coords);
     }
 
     public void addVertex(Vec2f coords) {

@@ -3,7 +3,8 @@ package cz.urbangaming.galgs;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.opengl.GLES20;
 import android.util.Log;
@@ -35,7 +36,7 @@ class Scene {
     private FloatBuffer vertexBuffer = null;
 
     static final int COORDS_PER_VERTEX = 3;
-    private Vector<Float> sceneCoords = new Vector<Float>();
+    private List<Float> sceneCoords = new ArrayList<Float>();
     private int vertexCount = 0;
     private final int vertexStride = COORDS_PER_VERTEX * 4; // bytes per vertex
     float color[] = { 1f, 0f, 0f, 1.0f };
@@ -59,6 +60,32 @@ class Scene {
         sceneCoords.add(0.0f);
         newVertexBufferToDraw();
         GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertexCount, vertexBuffer);
+    }
+
+    public void removeVertex(Vec2f coords) {
+        // Does it make any sense to initialize the capacity here?
+        List<Float> newSceneCoords = new ArrayList<Float>(sceneCoords.size());
+        for (int i = 0; i < sceneCoords.size(); i += 3) {
+            float x = sceneCoords.get(i);
+            float y = sceneCoords.get(i + 1);
+            float z = sceneCoords.get(i + 2);
+            if (!isInRectangle(coords.X(), coords.Y(), GAlg.FINGER_ACCURACY, x, y)) {
+                Log.d(GAlg.DEBUG_TAG, "POINT[" + Math.round(x) + "," + Math.round(y) + "] NOT IN CIRCLE(x" + Math.round(coords.X()) + ",y" + Math.round(coords.Y()) + ",r" + GAlg.FINGER_ACCURACY + ")");
+                newSceneCoords.add(x);
+                newSceneCoords.add(y);
+                newSceneCoords.add(z);
+            } else {
+                Log.d(GAlg.DEBUG_TAG, "POINT[" + Math.round(x) + "," + Math.round(y) + "] IN CIRCLE(x" + Math.round(coords.X()) + ",y" + Math.round(coords.Y()) + ",r" + GAlg.FINGER_ACCURACY + ")");
+            }
+        }
+        sceneCoords = newSceneCoords;
+        newVertexBufferToDraw();
+        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertexCount, vertexBuffer);
+    }
+
+    private boolean isInRectangle(double centerX, double centerY, double size, double x, double y) {
+        return x >= centerX - size && x <= centerX + size &&
+               y >= centerY - size && y <= centerY + size;
     }
 
     private void newVertexBufferToDraw() {
