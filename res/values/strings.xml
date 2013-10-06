@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">GAlgs</string>
-    <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="remove_points">Remove mode</string>
-    <string name="add_points">Add mode</string>
+    <string name="app_name">GAlgs</string>    
+    <string name="workmode_delete">Delete mode</string>
+    <string name="workmode_add">Add mode</string>
+    <string name="workmode_edit">Edit mode</string>
+    <string name="work_mode">Select work mode</string>
     <string name="remove_all_points">Clear scene</string>
     <string name="generate_random_points">Generate radomly</string>
 

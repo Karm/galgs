@@ -13,6 +13,7 @@ import android.opengl.Matrix;
 /**
  * 
  * @author Michal Karm Babacek
+ * @license GNU GPL 3.0
  * 
  */
 class PointsRenderer implements GLSurfaceView.Renderer {
@@ -94,12 +95,22 @@ class PointsRenderer implements GLSurfaceView.Renderer {
         return ret;
     }
 
-    public void removeVertex(Vec2f coords) {
-        mScene.removeVertex(coords);
+    public int getSurfaceWidth() {
+        return surfaceWidth;
     }
 
-    public void addVertex(Vec2f coords) {
-        mScene.addVertex(coords);
+    public int getSurfaceHeight() {
+        return surfaceHeight;
+    }
+
+    // TODO: This is rather silly, let's remove this delegate-chain because we ain't gonna do anything but calling mScene here...
+
+    public void removeVertex(float x, float y) {
+        mScene.removeVertex(x, y);
+    }
+
+    public void addVertex(float x, float y) {
+        mScene.addVertex(x, y);
     }
 
     public void clearScene() {
@@ -110,12 +121,16 @@ class PointsRenderer implements GLSurfaceView.Renderer {
         mScene.addRandomPoints();
     }
 
-    public int getSurfaceWidth() {
-        return surfaceWidth;
+    public void selectVertex(float x, float y) {
+        mScene.selectVertex(x, y);
     }
 
-    public int getSurfaceHeight() {
-        return surfaceHeight;
+    public void moveSelectedVertexTo(float x, float y) {
+        mScene.moveSelectedVertexTo(x, y);
+    }
+
+    public void deselectVertex() {
+        mScene.deselectVertex();
     }
 
 }

@@ -7,6 +7,7 @@ import java.util.Random;
 /**
  * 
  * @author Michal Karm Babacek
+ * @license GNU GPL 3.0
  * 
  */
 public class Utils {

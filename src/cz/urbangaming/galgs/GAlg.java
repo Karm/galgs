@@ -11,10 +11,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.SubMenu;
 
 /**
  * 
  * @author Michal Karm Babacek
+ * @license GNU GPL 3.0
  * 
  */
 public class GAlg extends Activity {
@@ -22,24 +24,27 @@ public class GAlg extends Activity {
 
     private PointsRenderer pointsRenderer = null;
 
-    private static final int EDIT_MODE = 0;
-    private static final int REMOVE_ALL_POINTS = 1;
-    private static final int ADD_RANDOM_POINTS = 2;
+    // Menus begin
+    private static final int WORK_MODE = 10;
+    private static final int WORK_MODE_EDIT = 20;
+    private static final int WORK_MODE_ADD = 30;
+    private static final int WORK_MODE_DELETE = 40;
 
-    private static final int ADDING_POINTS = 0;
-    private static final int REMOVING_POINTS = 1;
+    private static final int REMOVE_ALL_POINTS = 50;
+    private static final int ADD_RANDOM_POINTS = 60;
+    // Menus end
 
-    private int pointsEditMode = ADDING_POINTS;
+    private int currentWorkMode = WORK_MODE_ADD;
 
     // /////// Some settings: Move it outside... /////////
 
     // TODO: THIS IS SO EPICLY WRONG! I must calculate it accordingly to display's density...
-    public static final int FINGER_ACCURACY = 15;
-    public static final float POINT_SIZE = 5f;
-    // No, it's not very conveniet to have points too close to boundaries
-    //public static final int BORDER_POINT_POSITION = Math.round(POINT_SIZE / 2);
-    public static final int BORDER_POINT_POSITION = 10;
-    public static final int HOW_MANY_POINTS_GENERATE = 10;
+    public static final float POINT_SIZE = 10f;
+    public static final int FINGER_ACCURACY = Math.round(POINT_SIZE) * 3;
+    // No, it's not very convenient to have points too close to boundaries
+    // public static final int BORDER_POINT_POSITION = Math.round(POINT_SIZE / 2);
+    public static final int BORDER_POINT_POSITION = Math.round(POINT_SIZE) * 3;
+    public static final int HOW_MANY_POINTS_GENERATE = Math.round(POINT_SIZE) * 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,34 +57,53 @@ public class GAlg extends Activity {
             pointsRenderer = new PointsRenderer();
             mGLSurfaceView.setRenderer(pointsRenderer);
         } else {
-            // Handle as an unrecoverable error and leave the activity somehow...
+            // TODO: Handle as an unrecoverable error and leave the activity somehow...
         }
-        // registerForContextMenu(getListView());
         setContentView(mGLSurfaceView);
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
+        // Intentionally left blank
         return true;
     }
 
     public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
         menu.clear();
-        if (pointsEditMode == ADDING_POINTS) {
-            menu.add(0, EDIT_MODE, 0, R.string.remove_points);
-        } else {
-            menu.add(0, EDIT_MODE, 0, R.string.add_points);
+        SubMenu submenu = menu.addSubMenu(0, WORK_MODE, 0, R.string.work_mode);
+        switch (currentWorkMode) {
+        case WORK_MODE_ADD:
+            submenu.add(0, WORK_MODE_DELETE, 0, R.string.workmode_delete);
+            submenu.add(0, WORK_MODE_EDIT, 1, R.string.workmode_edit);
+            break;
+        case WORK_MODE_DELETE:
+            submenu.add(0, WORK_MODE_ADD, 0, R.string.workmode_add);
+            submenu.add(0, WORK_MODE_EDIT, 1, R.string.workmode_edit);
+            break;
+        case WORK_MODE_EDIT:
+            submenu.add(0, WORK_MODE_ADD, 0, R.string.workmode_add);
+            submenu.add(0, WORK_MODE_DELETE, 1, R.string.workmode_delete);
+            break;
+        default:
+            // nothing
+            break;
         }
-        menu.add(0, REMOVE_ALL_POINTS, 1, R.string.remove_all_points);
-        menu.add(0, ADD_RANDOM_POINTS, 2, R.string.generate_random_points);
+        menu.add(1, REMOVE_ALL_POINTS, 1, R.string.remove_all_points);
+        menu.add(1, ADD_RANDOM_POINTS, 2, R.string.generate_random_points);
         return true;
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
         boolean itemHandled = true;
         switch (item.getItemId()) {
-        case EDIT_MODE:
-            pointsEditMode = (pointsEditMode == ADDING_POINTS) ? REMOVING_POINTS : ADDING_POINTS;
+        case WORK_MODE_ADD:
+            currentWorkMode = WORK_MODE_ADD;
+            break;
+        case WORK_MODE_DELETE:
+            currentWorkMode = WORK_MODE_DELETE;
+            break;
+        case WORK_MODE_EDIT:
+            currentWorkMode = WORK_MODE_EDIT;
             break;
         case REMOVE_ALL_POINTS:
             pointsRenderer.clearScene();
@@ -87,7 +111,6 @@ public class GAlg extends Activity {
         case ADD_RANDOM_POINTS:
             pointsRenderer.addRandomPoints();
             break;
-
         default:
             itemHandled = false;
             break;
@@ -126,17 +149,30 @@ public class GAlg extends Activity {
             float x = event.getAxisValue(MotionEvent.AXIS_X);
             float y = event.getAxisValue(MotionEvent.AXIS_Y);
             Log.d(DEBUG_TAG, "Action was DOWN [" + x + "," + y + "]");
-            if (pointsEditMode == ADDING_POINTS) {
-                pointsRenderer.addVertex(new Vec2f(x, y));
-            } else {
-                pointsRenderer.removeVertex(new Vec2f(x, y));
+            switch (currentWorkMode) {
+            case WORK_MODE_ADD:
+                pointsRenderer.addVertex(x, y);
+                break;
+            case WORK_MODE_DELETE:
+                pointsRenderer.removeVertex(x, y);
+                break;
+            case WORK_MODE_EDIT:
+                pointsRenderer.selectVertex(x, y);
+                break;
+            default:
+                break;
             }
             return true;
         case (MotionEvent.ACTION_MOVE):
-            Log.d(DEBUG_TAG, "Action was MOVE");
+            if (currentWorkMode == WORK_MODE_EDIT) {
+                pointsRenderer.moveSelectedVertexTo(event.getAxisValue(MotionEvent.AXIS_X), event.getAxisValue(MotionEvent.AXIS_Y));
+            }
             return true;
         case (MotionEvent.ACTION_UP):
             Log.d(DEBUG_TAG, "Action was UP");
+            if (currentWorkMode == WORK_MODE_EDIT) {
+                pointsRenderer.deselectVertex();
+            }
             return true;
         case (MotionEvent.ACTION_CANCEL):
             Log.d(DEBUG_TAG, "Action was CANCEL");
