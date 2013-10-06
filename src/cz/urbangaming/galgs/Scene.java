@@ -31,15 +31,23 @@ class Scene {
                     "}";
 
     private final int mProgram;
+    private final int mLinesProgram;
     private int mPositionHandle;
+    private int mLinesPositionHandle;
     private int mColorHandle;
+    private int mLinesColorHandle;
     private FloatBuffer vertexBuffer = null;
+    private FloatBuffer linesVertexBuffer = null;
 
     static final int COORDS_PER_VERTEX = 3;
-    private List<Float> sceneCoords = new ArrayList<Float>();
+    private List<Float> verticesCoords = new ArrayList<Float>();
+    private List<Float> linesCoords = new ArrayList<Float>();
     private int vertexCount = 0;
+    private int linesVertexCount = 0;
     private final int vertexStride = COORDS_PER_VERTEX * 4; // bytes per vertex
-    float color[] = { 1f, 0f, 0f, 1.0f };
+    private static final float colorVertices[] = { 1f, 0f, 0f, 1.0f };
+    private static final float colorLines[] = { 0f, 1f, 0f, 1.0f };
+    private boolean drawLines = false;
     private PointsRenderer pointsRenderer = null;
 
     // -1 means "none selected" X Y Z index
@@ -53,42 +61,47 @@ class Scene {
         int vertexShader = PointsRenderer.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
         int fragmentShader = PointsRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
         mProgram = GLES20.glCreateProgram(); // create empty OpenGL Program
+        mLinesProgram = GLES20.glCreateProgram(); // create empty OpenGL Program
         GLES20.glAttachShader(mProgram, vertexShader); // add the vertex shader to program
         GLES20.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
         GLES20.glLinkProgram(mProgram); // create OpenGL program executables
+        // Hmm, let'suse the same shaders for this. TODO: Really?
+        // TODO: This is weird... :-(
+        GLES20.glAttachShader(mLinesProgram, vertexShader); // add the vertex shader to program
+        GLES20.glAttachShader(mLinesProgram, fragmentShader); // add the fragment shader to program
+        GLES20.glLinkProgram(mLinesProgram); // create OpenGL program executables
     }
 
     public void clearScene() {
-        sceneCoords.clear();
+        verticesCoords.clear();
+        linesCoords.clear();
+        drawLines = false;
         newVertexBufferToDraw();
-        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertexCount, vertexBuffer);
     }
 
     public void addRandomPoints() {
-        sceneCoords.addAll(Utils.generateSomeVertices(GAlg.HOW_MANY_POINTS_GENERATE,
+        verticesCoords.addAll(Utils.generateSomeVertices(GAlg.HOW_MANY_POINTS_GENERATE,
                 GAlg.BORDER_POINT_POSITION,
                 GAlg.BORDER_POINT_POSITION,
                 pointsRenderer.getSurfaceWidth() - GAlg.BORDER_POINT_POSITION,
                 pointsRenderer.getSurfaceHeight() - GAlg.BORDER_POINT_POSITION));
         newVertexBufferToDraw();
-        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertexCount, vertexBuffer);
     }
 
     public void addVertex(float x, float y) {
-        sceneCoords.add(x);
-        sceneCoords.add(y);
-        sceneCoords.add(0.0f);
+        verticesCoords.add(x);
+        verticesCoords.add(y);
+        verticesCoords.add(0.0f);
         newVertexBufferToDraw();
-        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertexCount, vertexBuffer);
     }
 
     public void selectVertex(float x, float y) {
         if (!vertexSelected) {
             // TODO: Shouldn't we somehow mark the selected vertex? Colour?
-            for (int i = 0; i < sceneCoords.size(); i += 3) {
-                float thisX = sceneCoords.get(i);
-                float thisY = sceneCoords.get(i + 1);
-                // float thisZ = sceneCoords.get(i + 2);
+            for (int i = 0; i < verticesCoords.size(); i += 3) {
+                float thisX = verticesCoords.get(i);
+                float thisY = verticesCoords.get(i + 1);
+                // float thisZ = verticesCoords.get(i + 2);
                 if (Utils.isInRectangle(x, y, GAlg.FINGER_ACCURACY, thisX, thisY)) {
                     selectedVertexIndexes[0] = i;
                     selectedVertexIndexes[1] = i + 1;
@@ -103,10 +116,9 @@ class Scene {
     public void moveSelectedVertexTo(float x, float y) {
         if (vertexSelected) {
             // Update location x,y
-            sceneCoords.set(selectedVertexIndexes[0], x);
-            sceneCoords.set(selectedVertexIndexes[1], y);
+            verticesCoords.set(selectedVertexIndexes[0], x);
+            verticesCoords.set(selectedVertexIndexes[1], y);
             newVertexBufferToDraw();
-            GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertexCount, vertexBuffer);
         }
     }
 
@@ -119,35 +131,64 @@ class Scene {
 
     public void removeVertex(float x, float y) {
         // Does it make any sense to initialize the capacity here?
-        List<Float> newSceneCoords = new ArrayList<Float>(sceneCoords.size());
-        for (int i = 0; i < sceneCoords.size(); i += 3) {
-            float thisX = sceneCoords.get(i);
-            float thisY = sceneCoords.get(i + 1);
-            float thisZ = sceneCoords.get(i + 2);
+        List<Float> newSceneCoords = new ArrayList<Float>(verticesCoords.size());
+        for (int i = 0; i < verticesCoords.size(); i += 3) {
+            float thisX = verticesCoords.get(i);
+            float thisY = verticesCoords.get(i + 1);
+            float thisZ = verticesCoords.get(i + 2);
             if (!Utils.isInRectangle(x, y, GAlg.FINGER_ACCURACY, thisX, thisY)) {
                 newSceneCoords.add(thisX);
                 newSceneCoords.add(thisY);
                 newSceneCoords.add(thisZ);
             }
         }
-        sceneCoords = newSceneCoords;
+        verticesCoords = newSceneCoords;
         newVertexBufferToDraw();
-        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertexCount, vertexBuffer);
+    }
+
+    public void renderLines(int algorithmUsed) {
+        switch (algorithmUsed) {
+        case GAlg.CONVEX_HULL_GW:
+            // Doesn't make any sense with less than 2 vertices.
+            List<Float> results = Algorithms.convexHullGiftWrapping(verticesCoords);
+            if (results.size() >= 2) {
+                linesCoords.addAll(results);
+                drawLines = true;
+                newVertexBufferToDraw();
+            }
+            break;
+
+        default:
+            break;
+        }
+        // silence is golden
     }
 
     private void newVertexBufferToDraw() {
         // (number of coordinate values * 4 bytes per float)
-        ByteBuffer bb = ByteBuffer.allocateDirect(sceneCoords.size() * 4);
+        ByteBuffer bb = ByteBuffer.allocateDirect(verticesCoords.size() * 4);
         // use the device hardware's native byte order
         bb.order(ByteOrder.nativeOrder());
         // create a floating point buffer from the ByteBuffer
         vertexBuffer = bb.asFloatBuffer();
         // add the coordinates to the FloatBuffer
-        vertexBuffer.put(PointsRenderer.floatVectorToArray(sceneCoords));
+        vertexBuffer.put(PointsRenderer.floatVectorToArray(verticesCoords));
         // set the buffer to read the first coordinate
         vertexBuffer.position(0);
-        vertexCount = sceneCoords.size() / COORDS_PER_VERTEX;
-        Log.d(GAlg.DEBUG_TAG, "Scene coords to draw: " + sceneCoords.toString());
+        vertexCount = verticesCoords.size() / COORDS_PER_VERTEX;
+        // Log.d(GAlg.DEBUG_TAG, "Scene coords to draw: " + verticesCoords.toString());
+        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertexCount, vertexBuffer);
+
+        if (drawLines) {
+            bb = ByteBuffer.allocateDirect(linesCoords.size() * 4);
+            bb.order(ByteOrder.nativeOrder());
+            linesVertexBuffer = bb.asFloatBuffer();
+            linesVertexBuffer.put(PointsRenderer.floatVectorToArray(linesCoords));
+            linesVertexBuffer.position(0);
+            linesVertexCount = linesCoords.size() / COORDS_PER_VERTEX;
+            Log.d(GAlg.DEBUG_TAG, "Drawing lines between: " + linesCoords.toString());
+            GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, linesVertexCount, linesVertexBuffer);
+        }
     }
 
     public void draw() {
@@ -165,8 +206,8 @@ class Scene {
 
         // get handle to fragment shader's vColor member
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
-        // Set color for drawing the scene
-        GLES20.glUniform4fv(mColorHandle, 1, color, 0);
+        // Set colorVertices for drawing the scene
+        GLES20.glUniform4fv(mColorHandle, 1, colorVertices, 0);
 
         // Get handle to shape's transformation matrix
         int mtrxhandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
@@ -179,6 +220,19 @@ class Scene {
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
+
+        if (drawLines) {
+            GLES20.glUseProgram(mLinesProgram);
+            mLinesPositionHandle = GLES20.glGetAttribLocation(mLinesProgram, "vPosition");
+            GLES20.glEnableVertexAttribArray(mLinesPositionHandle);
+            GLES20.glVertexAttribPointer(mLinesPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, linesVertexBuffer);
+            mLinesColorHandle = GLES20.glGetUniformLocation(mLinesProgram, "vColor");
+            GLES20.glUniform4fv(mLinesColorHandle, 1, colorLines, 0);
+            int mtrxLineshandle = GLES20.glGetUniformLocation(mLinesProgram, "uMVPMatrix");
+            GLES20.glUniformMatrix4fv(mtrxLineshandle, 1, false, pointsRenderer.mtrxProjectionAndView, 0);
+            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, linesVertexCount);
+            GLES20.glDisableVertexAttribArray(mLinesPositionHandle);
+        }
     }
 
 }

@@ -25,13 +25,16 @@ public class GAlg extends Activity {
     private PointsRenderer pointsRenderer = null;
 
     // Menus begin
-    private static final int WORK_MODE = 10;
-    private static final int WORK_MODE_EDIT = 20;
-    private static final int WORK_MODE_ADD = 30;
-    private static final int WORK_MODE_DELETE = 40;
+    public static final int WORK_MODE = 10;
+    public static final int WORK_MODE_EDIT = 20;
+    public static final int WORK_MODE_ADD = 30;
+    public static final int WORK_MODE_DELETE = 40;
+    
+    public static final int SELECT_ALGORITHM = 50;
+    public static final int CONVEX_HULL_GW = 60;
 
-    private static final int REMOVE_ALL_POINTS = 50;
-    private static final int ADD_RANDOM_POINTS = 60;
+    public static final int REMOVE_ALL_POINTS = 70;
+    public static final int ADD_RANDOM_POINTS = 80;
     // Menus end
 
     private int currentWorkMode = WORK_MODE_ADD;
@@ -90,6 +93,8 @@ public class GAlg extends Activity {
         }
         menu.add(1, REMOVE_ALL_POINTS, 1, R.string.remove_all_points);
         menu.add(1, ADD_RANDOM_POINTS, 2, R.string.generate_random_points);
+        submenu  = menu.addSubMenu(3, SELECT_ALGORITHM, 3, R.string.select_algorithm);
+        submenu.add(3, CONVEX_HULL_GW, 0, R.string.algorithm_convex_hull_gw);
         return true;
     }
 
@@ -111,6 +116,8 @@ public class GAlg extends Activity {
         case ADD_RANDOM_POINTS:
             pointsRenderer.addRandomPoints();
             break;
+        case CONVEX_HULL_GW:
+            pointsRenderer.renderAlgorithm(CONVEX_HULL_GW);
         default:
             itemHandled = false;
             break;

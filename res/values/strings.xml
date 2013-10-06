@@ -8,5 +8,7 @@
     <string name="work_mode">Select work mode</string>
     <string name="remove_all_points">Clear scene</string>
     <string name="generate_random_points">Generate radomly</string>
+    <string name="select_algorithm">Select algorithm</string>
+    <string name="algorithm_convex_hull_gw">Convex hull GW</string>
 
 </resources>

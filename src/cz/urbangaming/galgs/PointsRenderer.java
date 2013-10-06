@@ -1,5 +1,6 @@
 package cz.urbangaming.galgs;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -29,14 +30,14 @@ class PointsRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
-        // Set the background frame color
+        // Set the background frame colorVertices
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         mScene = new Scene(this);
     }
 
     @Override
     public void onDrawFrame(GL10 unused) {
-        // Draw background color
+        // Draw background colorVertices
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         // Draw scene
         mScene.draw();
@@ -131,6 +132,10 @@ class PointsRenderer implements GLSurfaceView.Renderer {
 
     public void deselectVertex() {
         mScene.deselectVertex();
+    }
+
+    public void renderAlgorithm(int algorithmUsed) {
+        mScene.renderLines(algorithmUsed);
     }
 
 }
