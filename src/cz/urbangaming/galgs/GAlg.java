@@ -39,7 +39,7 @@ public class GAlg extends Activity {
     // /////// Some settings: Move it outside... /////////
 
     // TODO: THIS IS SO EPICLY WRONG! I must calculate it accordingly to display's density...
-    public static final float POINT_SIZE = 10f;
+    public static final float POINT_SIZE = 7f;
     public static final int FINGER_ACCURACY = Math.round(POINT_SIZE) * 3;
     // No, it's not very convenient to have points too close to boundaries
     // public static final int BORDER_POINT_POSITION = Math.round(POINT_SIZE / 2);
