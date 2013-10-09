@@ -147,12 +147,14 @@ class Scene {
     }
 
     public void renderLines(int algorithmUsed) {
+        linesCoords.clear();
         switch (algorithmUsed) {
         case GAlg.CONVEX_HULL_GW:
             // Doesn't make any sense with less than 2 vertices.
             List<Float> results = Algorithms.convexHullGiftWrapping(verticesCoords);
             if (results.size() >= 2) {
                 linesCoords.addAll(results);
+                //
                 drawLines = true;
                 newVertexBufferToDraw();
             }
@@ -230,7 +232,7 @@ class Scene {
             GLES20.glUniform4fv(mLinesColorHandle, 1, colorLines, 0);
             int mtrxLineshandle = GLES20.glGetUniformLocation(mLinesProgram, "uMVPMatrix");
             GLES20.glUniformMatrix4fv(mtrxLineshandle, 1, false, pointsRenderer.mtrxProjectionAndView, 0);
-            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, linesVertexCount);
+            GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, linesVertexCount);
             GLES20.glDisableVertexAttribArray(mLinesPositionHandle);
         }
     }
