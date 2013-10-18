@@ -10,5 +10,6 @@
     <string name="generate_random_points">Generate radomly</string>
     <string name="select_algorithm">Select algorithm</string>
     <string name="algorithm_convex_hull_gw">Convex hull GW</string>
+    <string name="algorithm_convex_hull_gs">Convex hull GS</string>
 
 </resources>

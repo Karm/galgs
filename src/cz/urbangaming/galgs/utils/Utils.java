@@ -1,6 +1,7 @@
-package cz.urbangaming.galgs;
+package cz.urbangaming.galgs.utils;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
@@ -125,5 +126,34 @@ public class Utils {
                 return 1; //right
             return 0; //on the line
         }
+    }
+    
+    
+    
+    
+    /**
+     * Returns the angle between this point and that point.
+     * @return the angle in radians (between -pi and pi) between this point and that point (0 if equal)
+     */
+    public static double angleTo(Point2D thisOne, Point2D thatOne) {
+        double dx = thatOne.x()  - thisOne.x() ;
+        double dy = thatOne.y()  - thisOne.y() ;
+        return Math.atan2(dy, dx);
+    }
+ 
+  
+   
+    /**
+     * Is a->b->c a counterclockwise turn?
+     * @param a first point
+     * @param b second point
+     * @param c third point
+     * @return { -1, 0, +1 } if a->b->c is a { clockwise, collinear; counterclocwise } turn.
+     */
+    public static int ccw(Point2D a, Point2D b, Point2D c) {
+        double area2 = (b.x()-a.x())*(c.y()-a.y()) - (b.y()-a.y())*(c.x()-a.x());
+        if      (area2 < 0) return -1;
+        else if (area2 > 0) return +1;
+        else                return  0;
     }
 }

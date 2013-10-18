@@ -32,6 +32,7 @@ public class GAlg extends Activity {
     
     public static final int SELECT_ALGORITHM = 50;
     public static final int CONVEX_HULL_GW = 60;
+    public static final int CONVEX_HULL_GS = 61;
 
     public static final int REMOVE_ALL_POINTS = 70;
     public static final int ADD_RANDOM_POINTS = 80;
@@ -45,7 +46,6 @@ public class GAlg extends Activity {
     public static final float POINT_SIZE = 7f;
     public static final int FINGER_ACCURACY = Math.round(POINT_SIZE) * 3;
     // No, it's not very convenient to have points too close to boundaries
-    // public static final int BORDER_POINT_POSITION = Math.round(POINT_SIZE / 2);
     public static final int BORDER_POINT_POSITION = Math.round(POINT_SIZE) * 3;
     public static final int HOW_MANY_POINTS_GENERATE = Math.round(POINT_SIZE) * 2;
 
@@ -95,6 +95,8 @@ public class GAlg extends Activity {
         menu.add(1, ADD_RANDOM_POINTS, 2, R.string.generate_random_points);
         submenu  = menu.addSubMenu(3, SELECT_ALGORITHM, 3, R.string.select_algorithm);
         submenu.add(3, CONVEX_HULL_GW, 0, R.string.algorithm_convex_hull_gw);
+        submenu.add(3, CONVEX_HULL_GS, 0, R.string.algorithm_convex_hull_gs);
+
         return true;
     }
 
@@ -118,6 +120,8 @@ public class GAlg extends Activity {
             break;
         case CONVEX_HULL_GW:
             pointsRenderer.renderAlgorithm(CONVEX_HULL_GW);
+        case CONVEX_HULL_GS:
+            pointsRenderer.renderAlgorithm(CONVEX_HULL_GS);
         default:
             itemHandled = false;
             break;

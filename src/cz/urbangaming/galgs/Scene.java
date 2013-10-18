@@ -6,6 +6,7 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import cz.urbangaming.galgs.utils.Utils;
 import android.opengl.GLES20;
 import android.util.Log;
 
@@ -16,6 +17,7 @@ import android.util.Log;
  * 
  */
 class Scene {
+    private final Algorithms algorithms = new Algorithms();
     private final String vertexShaderCode =
             "uniform   mat4 uMVPMatrix;" +
                     "attribute vec4 vPosition;" +
@@ -148,22 +150,25 @@ class Scene {
 
     public void renderLines(int algorithmUsed) {
         linesCoords.clear();
+        List<Float> results = null;
         switch (algorithmUsed) {
         case GAlg.CONVEX_HULL_GW:
-            // Doesn't make any sense with less than 2 vertices.
-            List<Float> results = Algorithms.convexHullGiftWrapping(verticesCoords);
-            if (results.size() >= 2) {
-                linesCoords.addAll(results);
-                //
-                drawLines = true;
-                newVertexBufferToDraw();
-            }
+            results = algorithms.convexHullGiftWrapping(verticesCoords);
+            break;
+        case GAlg.CONVEX_HULL_GS:
+            results = algorithms.convexHullGrahamScan(verticesCoords);
             break;
 
         default:
+            // silence is golden
             break;
         }
-        // silence is golden
+        // Doesn't make any sense with less than 2 vertices.
+        if (results != null && results.size() >= 2) {
+            linesCoords.addAll(results);
+            drawLines = true;
+            newVertexBufferToDraw();
+        }
     }
 
     private void newVertexBufferToDraw() {
