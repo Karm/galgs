@@ -1,14 +1,12 @@
 package cz.urbangaming.galgs;
 
-import java.util.Iterator;
-import java.util.List;
-
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import cz.urbangaming.galgs.utils.Point2D;
 
 /**
  * 
@@ -86,15 +84,6 @@ class PointsRenderer implements GLSurfaceView.Renderer {
         return shader;
     }
 
-    public static float[] floatVectorToArray(List<Float> sceneCoords) {
-        float[] ret = new float[sceneCoords.size()];
-        Iterator<Float> iterator = sceneCoords.iterator();
-        for (int i = 0; i < ret.length; i++) {
-            ret[i] = iterator.next().floatValue();
-        }
-        return ret;
-    }
-
     public int getSurfaceWidth() {
         return surfaceWidth;
     }
@@ -105,12 +94,12 @@ class PointsRenderer implements GLSurfaceView.Renderer {
 
     // TODO: This is rather silly, let's remove this delegate-chain because we ain't gonna do anything but calling mScene here...
 
-    public void removeVertex(float x, float y) {
-        mScene.removeVertex(x, y);
+    public void removeVertex(Point2D point2d) {
+        mScene.removeVertex(point2d);
     }
 
-    public void addVertex(float x, float y) {
-        mScene.addVertex(x, y);
+    public void addVertex(Point2D point2d) {
+        mScene.addVertex(point2d);
     }
 
     public void clearScene() {
@@ -121,8 +110,8 @@ class PointsRenderer implements GLSurfaceView.Renderer {
         mScene.addRandomPoints();
     }
 
-    public void selectVertex(float x, float y) {
-        mScene.selectVertex(x, y);
+    public void selectVertex(Point2D point2d) {
+        mScene.selectVertex(point2d);
     }
 
     public void moveSelectedVertexTo(float x, float y) {

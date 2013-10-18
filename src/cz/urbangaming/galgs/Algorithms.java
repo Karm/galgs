@@ -1,9 +1,9 @@
 package cz.urbangaming.galgs;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 
 import cz.urbangaming.galgs.utils.Point2D;
@@ -21,81 +21,67 @@ public class Algorithms {
 
     /**
      * Convex Hull with Gift Wrapping
+     * 
      * @param vertices
      * @return
      */
-    public List<Float> convexHullGiftWrapping(List<Float> vertices) {
-        if (vertices.size() > 3) {
-            List<Float> vertexOnTheHull = Utils.maxYMaxX(vertices);
-            List<Float> verticesOnHull = new ArrayList<Float>();
-            List<Float> currentVertex = new ArrayList<Float>(3);
+    public List<Point2D> convexHullGiftWrapping(List<Point2D> points) {
+        if (points.size() > 3) {
+            Collections.sort(points, new YXOrderComparator());
+            // isn't it rather clumsy?
+            Point2D vertexOnTheHull = points.get(points.size() - 1);
+            List<Point2D> verticesOnHull = new ArrayList<Point2D>();
+            Point2D currentVertex;
             do {
-                verticesOnHull.addAll(vertexOnTheHull);
-                currentVertex = vertices.subList(0, 3);
-                for (int i = 3; i < vertices.size(); i += 3) {
-                    List<Float> nextVertex = vertices.subList(i, i + 3);
-                    List<Float> threeVertices = new ArrayList<Float>(9);
-                    threeVertices.addAll(nextVertex);
-                    threeVertices.addAll(vertexOnTheHull);
-                    threeVertices.addAll(currentVertex);
-                    if (currentVertex.equals(vertexOnTheHull) || Utils.position(threeVertices) == 1) {
+                verticesOnHull.add(vertexOnTheHull);
+                currentVertex = points.get(0);
+                for (int i = 1; i < points.size(); i++) {
+                    Point2D nextVertex = points.get(i);
+                    if (currentVertex.equals(vertexOnTheHull) || Utils.ccw(nextVertex, vertexOnTheHull, currentVertex) == 1) {
                         currentVertex = nextVertex;
                     }
                 }
                 vertexOnTheHull = currentVertex;
-            } while (!currentVertex.equals(verticesOnHull.subList(0, 3)));
-            //Log.d(GAlg.DEBUG_TAG, "RIGHTMOST BOTTOM:" + vertexOnHull);
+            } while (!currentVertex.equals(verticesOnHull.get(0)));
+            // Log.d(GAlg.DEBUG_TAG, "RIGHTMOST BOTTOM:" + vertexOnHull);
             return verticesOnHull;
         } else {
-            return vertices;
+            return points;
         }
     }
 
-    public List<Float> convexHullGrahamScan(List<Float> vertices) {
-        //TODO Remove this transformation
-        List<Point2D> trueVertices = new ArrayList<Point2D>();
-        for (int i = 0; i < vertices.size(); i += 3) {
-            List<Float> nextVertex = vertices.subList(i, i + 3);
-            trueVertices.add(new Point2D(nextVertex.get(0), nextVertex.get(1)));
-        }
-        
-        //Alg itself
-        Deque<Point2D> verticesOnHull = new LinkedList<Point2D>();
-        Collections.sort(trueVertices,new YXOrderComparator());
-        Collections.sort(trueVertices, new PolarOrderComparator(trueVertices.get(0)));
-        verticesOnHull.push(trueVertices.get(0));
-        
+    public List<Point2D> convexHullGrahamScan(List<Point2D> vertices) {
+        Deque<Point2D> verticesOnHull = new ArrayDeque<Point2D>();
+        Collections.sort(vertices, new YXOrderComparator());
+        Collections.sort(vertices, new PolarOrderComparator(vertices.get(0)));
+        verticesOnHull.push(vertices.get(0));
+
         // find index k1 of first point not equal to points[0]
-                int k1;
-                for (k1 = 1; k1 < trueVertices.size(); k1++)
-                    if (!trueVertices.get(0).equals(trueVertices.get(k1))) break;
-                //TODO TODO TODO
-                if (k1 == trueVertices.size()) return null;        // all points equal
+        int k1;
+        for (k1 = 1; k1 < vertices.size(); k1++)
+            if (!vertices.get(0).equals(vertices.get(k1)))
+                break;
+        // TODO TODO TODO
+        if (k1 == vertices.size())
+            return null; // all points equal
 
-                // find index k2 of first point not collinear with points[0] and points[k1]
-                int k2;
-                for (k2 = k1 + 1; k2 < trueVertices.size(); k2++)
-                    if (Utils.ccw(trueVertices.get(0), trueVertices.get(k1), trueVertices.get(k2)) != 0) break;
-                verticesOnHull.push(trueVertices.get(k2-1));
+        // find index k2 of first point not collinear with points[0] and points[k1]
+        int k2;
+        for (k2 = k1 + 1; k2 < vertices.size(); k2++)
+            if (Utils.ccw(vertices.get(0), vertices.get(k1), vertices.get(k2)) != 0)
+                break;
+        verticesOnHull.push(vertices.get(k2 - 1));
 
-                // Graham scan; note that points[N-1] is extreme point different from points[0]
-                for (int i = k2; i < trueVertices.size(); i++) {
-                    Point2D top = verticesOnHull.pop();
-                    while (Utils.ccw(verticesOnHull.peek(), top, trueVertices.get(i)) <= 0) {
-                        top = verticesOnHull.pop();
-                    }
-                    verticesOnHull.push(top);
-                    verticesOnHull.push(trueVertices.get(i));
-                }
-        
-                
-                //TRAnsform it back to whatever
-                List<Float> returnVerts = new ArrayList<Float>();
-                for (Point2D point2d : verticesOnHull) {
-                    returnVerts.add(point2d.x());
-                    returnVerts.add(point2d.y());
-                    returnVerts.add(0f);
-                }
-        return returnVerts;
+        // Graham scan; note that points[N-1] is extreme point different from points[0]
+        for (int i = k2; i < vertices.size(); i++) {
+            Point2D top = verticesOnHull.pop();
+            while (Utils.ccw(verticesOnHull.peek(), top, vertices.get(i)) <= 0) {
+                top = verticesOnHull.pop();
+            }
+            verticesOnHull.push(top);
+            verticesOnHull.push(vertices.get(i));
+        }
+
+        return new ArrayList<Point2D>(verticesOnHull);
     }
 }

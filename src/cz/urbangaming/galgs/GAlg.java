@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SubMenu;
+import cz.urbangaming.galgs.utils.Point2D;
 
 /**
  * 
@@ -29,7 +30,7 @@ public class GAlg extends Activity {
     public static final int WORK_MODE_EDIT = 20;
     public static final int WORK_MODE_ADD = 30;
     public static final int WORK_MODE_DELETE = 40;
-    
+
     public static final int SELECT_ALGORITHM = 50;
     public static final int CONVEX_HULL_GW = 60;
     public static final int CONVEX_HULL_GS = 61;
@@ -93,7 +94,7 @@ public class GAlg extends Activity {
         }
         menu.add(1, REMOVE_ALL_POINTS, 1, R.string.remove_all_points);
         menu.add(1, ADD_RANDOM_POINTS, 2, R.string.generate_random_points);
-        submenu  = menu.addSubMenu(3, SELECT_ALGORITHM, 3, R.string.select_algorithm);
+        submenu = menu.addSubMenu(3, SELECT_ALGORITHM, 3, R.string.select_algorithm);
         submenu.add(3, CONVEX_HULL_GW, 0, R.string.algorithm_convex_hull_gw);
         submenu.add(3, CONVEX_HULL_GS, 0, R.string.algorithm_convex_hull_gs);
 
@@ -157,18 +158,17 @@ public class GAlg extends Activity {
         int action = MotionEventCompat.getActionMasked(event);
         switch (action) {
         case (MotionEvent.ACTION_DOWN):
-            float x = event.getAxisValue(MotionEvent.AXIS_X);
-            float y = event.getAxisValue(MotionEvent.AXIS_Y);
-            Log.d(DEBUG_TAG, "Action was DOWN [" + x + "," + y + "]");
+            Point2D point2d = new Point2D(event.getX(), event.getY());
+            Log.d(DEBUG_TAG, "Action was DOWN " + point2d.toString());
             switch (currentWorkMode) {
             case WORK_MODE_ADD:
-                pointsRenderer.addVertex(x, y);
+                pointsRenderer.addVertex(point2d);
                 break;
             case WORK_MODE_DELETE:
-                pointsRenderer.removeVertex(x, y);
+                pointsRenderer.removeVertex(point2d);
                 break;
             case WORK_MODE_EDIT:
-                pointsRenderer.selectVertex(x, y);
+                pointsRenderer.selectVertex(point2d);
                 break;
             default:
                 break;
@@ -176,7 +176,7 @@ public class GAlg extends Activity {
             return true;
         case (MotionEvent.ACTION_MOVE):
             if (currentWorkMode == WORK_MODE_EDIT) {
-                pointsRenderer.moveSelectedVertexTo(event.getAxisValue(MotionEvent.AXIS_X), event.getAxisValue(MotionEvent.AXIS_Y));
+                pointsRenderer.moveSelectedVertexTo(event.getX(), event.getY());
             }
             return true;
         case (MotionEvent.ACTION_UP):

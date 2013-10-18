@@ -1,6 +1,5 @@
 package cz.urbangaming.galgs.utils;
 
-import java.util.Comparator;
 
 /**
  * 
@@ -9,9 +8,9 @@ import java.util.Comparator;
  * 
  */
 public class Point2D {
-    
-    private final float x;
-    private final float y;
+
+    private float x;
+    private float y;
 
     public Point2D(float x, float y) {
         this.x = x;
@@ -26,17 +25,22 @@ public class Point2D {
         return y;
     }
 
+    public void updateWith(float x, float y) {
+        this.x = x;
+        this.y = y;
+    }
 
-    
     public boolean equals(Object other) {
-        if (other == this) return true;
-        if (other == null) return false;
-        if (other.getClass() != this.getClass()) return false;
+        if (other == this)
+            return true;
+        if (other == null)
+            return false;
+        if (other.getClass() != this.getClass())
+            return false;
         Point2D that = (Point2D) other;
         return this.x == that.x && this.y == that.y;
     }
 
-    
     public String toString() {
         return "[" + x + ", " + y + "]";
     }
@@ -44,6 +48,6 @@ public class Point2D {
     public int hashCode() {
         int hashX = ((Float) x).hashCode();
         int hashY = ((Float) y).hashCode();
-        return 31*hashX + hashY;
+        return 31 * hashX + hashY;
     }
 }

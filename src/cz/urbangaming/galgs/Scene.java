@@ -6,9 +6,10 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import cz.urbangaming.galgs.utils.Utils;
 import android.opengl.GLES20;
 import android.util.Log;
+import cz.urbangaming.galgs.utils.Point2D;
+import cz.urbangaming.galgs.utils.Utils;
 
 /**
  * 
@@ -16,7 +17,7 @@ import android.util.Log;
  * @license GNU GPL 3.0
  * 
  */
-class Scene {
+public class Scene {
     private final Algorithms algorithms = new Algorithms();
     private final String vertexShaderCode =
             "uniform   mat4 uMVPMatrix;" +
@@ -41,9 +42,9 @@ class Scene {
     private FloatBuffer vertexBuffer = null;
     private FloatBuffer linesVertexBuffer = null;
 
-    static final int COORDS_PER_VERTEX = 3;
-    private List<Float> verticesCoords = new ArrayList<Float>();
-    private List<Float> linesCoords = new ArrayList<Float>();
+    public static final int COORDS_PER_VERTEX = 3;
+    private List<Point2D> verticesCoords = new ArrayList<Point2D>();
+    private List<Point2D> linesCoords = new ArrayList<Point2D>();
     private int vertexCount = 0;
     private int linesVertexCount = 0;
     private final int vertexStride = COORDS_PER_VERTEX * 4; // bytes per vertex
@@ -53,7 +54,7 @@ class Scene {
     private PointsRenderer pointsRenderer = null;
 
     // -1 means "none selected" X Y Z index
-    private int selectedVertexIndexes[] = { -1, -1, -1 };
+    private int selectedVertexIndex = -1;
     private boolean vertexSelected = false;
 
     public Scene(PointsRenderer pointsRenderer) {
@@ -90,24 +91,17 @@ class Scene {
         newVertexBufferToDraw();
     }
 
-    public void addVertex(float x, float y) {
-        verticesCoords.add(x);
-        verticesCoords.add(y);
-        verticesCoords.add(0.0f);
+    public void addVertex(Point2D point2d) {
+        verticesCoords.add(point2d);
         newVertexBufferToDraw();
     }
 
-    public void selectVertex(float x, float y) {
+    public void selectVertex(Point2D point2d) {
         if (!vertexSelected) {
-            // TODO: Shouldn't we somehow mark the selected vertex? Colour?
-            for (int i = 0; i < verticesCoords.size(); i += 3) {
-                float thisX = verticesCoords.get(i);
-                float thisY = verticesCoords.get(i + 1);
-                // float thisZ = verticesCoords.get(i + 2);
-                if (Utils.isInRectangle(x, y, GAlg.FINGER_ACCURACY, thisX, thisY)) {
-                    selectedVertexIndexes[0] = i;
-                    selectedVertexIndexes[1] = i + 1;
-                    selectedVertexIndexes[2] = i + 2;
+            // Brutal force :-)
+            for (int i = 0; i < verticesCoords.size(); i++) {
+                if (Utils.isInRectangle(point2d, GAlg.FINGER_ACCURACY, verticesCoords.get(i))) {
+                    selectedVertexIndex = i;
                     vertexSelected = true;
                     break;
                 }
@@ -118,30 +112,24 @@ class Scene {
     public void moveSelectedVertexTo(float x, float y) {
         if (vertexSelected) {
             // Update location x,y
-            verticesCoords.set(selectedVertexIndexes[0], x);
-            verticesCoords.set(selectedVertexIndexes[1], y);
+            // Really? Isn't it a copy? Might be an epic one...  #fail
+            verticesCoords.get(selectedVertexIndex).updateWith(x, y);
             newVertexBufferToDraw();
         }
     }
 
     public void deselectVertex() {
         vertexSelected = false;
-        selectedVertexIndexes[0] = -1;
-        selectedVertexIndexes[1] = -1;
-        selectedVertexIndexes[2] = -1;
+        selectedVertexIndex = -1;
     }
 
-    public void removeVertex(float x, float y) {
-        // Does it make any sense to initialize the capacity here?
-        List<Float> newSceneCoords = new ArrayList<Float>(verticesCoords.size());
-        for (int i = 0; i < verticesCoords.size(); i += 3) {
-            float thisX = verticesCoords.get(i);
-            float thisY = verticesCoords.get(i + 1);
-            float thisZ = verticesCoords.get(i + 2);
-            if (!Utils.isInRectangle(x, y, GAlg.FINGER_ACCURACY, thisX, thisY)) {
-                newSceneCoords.add(thisX);
-                newSceneCoords.add(thisY);
-                newSceneCoords.add(thisZ);
+    public void removeVertex(Point2D point2d) {
+        List<Point2D> newSceneCoords = verticesCoords;
+        // Brutal force...
+        for (int i = 0; i < verticesCoords.size(); i++) {
+            if (Utils.isInRectangle(point2d, GAlg.FINGER_ACCURACY, verticesCoords.get(i))) {
+                newSceneCoords.remove(i);
+                break;
             }
         }
         verticesCoords = newSceneCoords;
@@ -150,7 +138,7 @@ class Scene {
 
     public void renderLines(int algorithmUsed) {
         linesCoords.clear();
-        List<Float> results = null;
+        List<Point2D> results = null;
         switch (algorithmUsed) {
         case GAlg.CONVEX_HULL_GW:
             results = algorithms.convexHullGiftWrapping(verticesCoords);
@@ -172,27 +160,27 @@ class Scene {
     }
 
     private void newVertexBufferToDraw() {
-        // (number of coordinate values * 4 bytes per float)
-        ByteBuffer bb = ByteBuffer.allocateDirect(verticesCoords.size() * 4);
+        // (number of points) * (number of coordinate values) * 4 bytes per float)
+        ByteBuffer bb = ByteBuffer.allocateDirect(verticesCoords.size() * COORDS_PER_VERTEX * 4);
         // use the device hardware's native byte order
         bb.order(ByteOrder.nativeOrder());
         // create a floating point buffer from the ByteBuffer
         vertexBuffer = bb.asFloatBuffer();
         // add the coordinates to the FloatBuffer
-        vertexBuffer.put(PointsRenderer.floatVectorToArray(verticesCoords));
+        vertexBuffer.put(Utils.pointVectorToArray(verticesCoords));
         // set the buffer to read the first coordinate
         vertexBuffer.position(0);
-        vertexCount = verticesCoords.size() / COORDS_PER_VERTEX;
+        vertexCount = verticesCoords.size();
         // Log.d(GAlg.DEBUG_TAG, "Scene coords to draw: " + verticesCoords.toString());
         GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, vertexCount, vertexBuffer);
 
         if (drawLines) {
-            bb = ByteBuffer.allocateDirect(linesCoords.size() * 4);
+            bb = ByteBuffer.allocateDirect(linesCoords.size() * COORDS_PER_VERTEX * 4);
             bb.order(ByteOrder.nativeOrder());
             linesVertexBuffer = bb.asFloatBuffer();
-            linesVertexBuffer.put(PointsRenderer.floatVectorToArray(linesCoords));
+            linesVertexBuffer.put(Utils.pointVectorToArray(linesCoords));
             linesVertexBuffer.position(0);
-            linesVertexCount = linesCoords.size() / COORDS_PER_VERTEX;
+            linesVertexCount = linesCoords.size();
             Log.d(GAlg.DEBUG_TAG, "Drawing lines between: " + linesCoords.toString());
             GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, linesVertexCount, linesVertexBuffer);
         }
