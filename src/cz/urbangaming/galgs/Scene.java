@@ -18,6 +18,7 @@ import cz.urbangaming.galgs.utils.Utils;
  * 
  */
 public class Scene {
+    private static int counter = 0;
     private final Algorithms algorithms = new Algorithms();
     private final String vertexShaderCode =
             "uniform   mat4 uMVPMatrix;" +
@@ -139,6 +140,7 @@ public class Scene {
     public void renderLines(int algorithmUsed) {
         linesCoords.clear();
         List<Point2D> results = null;
+        long time = System.currentTimeMillis();
         switch (algorithmUsed) {
         case GAlg.CONVEX_HULL_GW:
             results = algorithms.convexHullGiftWrapping(verticesCoords);
@@ -151,6 +153,8 @@ public class Scene {
             // silence is golden
             break;
         }
+        Log.d(GAlg.DEBUG_TAG, "#"+counter+"TIME TAKEN:" + (System.currentTimeMillis() - time));
+        counter++;
         // Doesn't make any sense with less than 2 vertices.
         if (results != null && results.size() >= 2) {
             linesCoords.addAll(results);

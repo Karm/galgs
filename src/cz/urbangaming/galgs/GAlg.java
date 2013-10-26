@@ -121,8 +121,10 @@ public class GAlg extends Activity {
             break;
         case CONVEX_HULL_GW:
             pointsRenderer.renderAlgorithm(CONVEX_HULL_GW);
+            break;
         case CONVEX_HULL_GS:
             pointsRenderer.renderAlgorithm(CONVEX_HULL_GS);
+            break;
         default:
             itemHandled = false;
             break;
