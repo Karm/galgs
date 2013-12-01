@@ -126,4 +126,8 @@ class PointsRenderer implements GLSurfaceView.Renderer {
         mScene.renderLines(algorithmUsed);
     }
 
+    public void linkPoints(int algorithmUsed) {
+        mScene.renderLines(algorithmUsed);
+    }
+
 }

@@ -50,28 +50,36 @@ public class Algorithms {
         }
     }
 
+    /**
+     * Convex hull with Graham's scan
+     * Source: Graphics Gems V., Alan W. Paeth, 1995
+     * 
+     * @param vertices
+     * @return
+     */
     public List<Point2D> convexHullGrahamScan(List<Point2D> vertices) {
         Deque<Point2D> verticesOnHull = new ArrayDeque<Point2D>();
         Collections.sort(vertices, new YXOrderComparator());
         Collections.sort(vertices, new PolarOrderComparator(vertices.get(0)));
         verticesOnHull.push(vertices.get(0));
-
-        // find index k1 of first point not equal to points[0]
-        int k1;
-        for (k1 = 1; k1 < vertices.size(); k1++)
-            if (!vertices.get(0).equals(vertices.get(k1)))
+        // find index firstPointNotEqual of first point not equal to points[0]
+        int firstPointNotEqual;
+        for (firstPointNotEqual = 1; firstPointNotEqual < vertices.size(); firstPointNotEqual++) {
+            if (!vertices.get(0).equals(vertices.get(firstPointNotEqual))) {
                 break;
-        // TODO TODO TODO
-        if (k1 == vertices.size())
-            return null; // all points equal
-
-        // find index k2 of first point not collinear with points[0] and points[k1]
+            }
+        }
+        if (firstPointNotEqual == vertices.size()) {
+            return null; // all points are equal
+        }
+        // find index k2 of first point not collinear with points[0] and points[firstPointNotEqual]
         int k2;
-        for (k2 = k1 + 1; k2 < vertices.size(); k2++)
-            if (Utils.ccw(vertices.get(0), vertices.get(k1), vertices.get(k2)) != 0)
+        for (k2 = firstPointNotEqual + 1; k2 < vertices.size(); k2++) {
+            if (Utils.ccw(vertices.get(0), vertices.get(firstPointNotEqual), vertices.get(k2)) != 0) {
                 break;
+            }
+        }
         verticesOnHull.push(vertices.get(k2 - 1));
-
         // Graham scan; note that points[N-1] is extreme point different from points[0]
         for (int i = k2; i < vertices.size(); i++) {
             Point2D top = verticesOnHull.pop();
@@ -81,7 +89,10 @@ public class Algorithms {
             verticesOnHull.push(top);
             verticesOnHull.push(vertices.get(i));
         }
-
         return new ArrayList<Point2D>(verticesOnHull);
+    }
+    
+    public List<Point2D> linkedPoints(List<Point2D> vertices) {
+        return vertices;
     }
 }

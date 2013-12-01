@@ -37,6 +37,8 @@ public class GAlg extends FragmentActivity {
     public static final int SELECT_ALGORITHM = 50;
     public static final int CONVEX_HULL_GW = 60;
     public static final int CONVEX_HULL_GS = 61;
+    public static final int LINKED_POINTS = 62;
+
 
     public static final int REMOVE_ALL_POINTS = 70;
     public static final int ADD_RANDOM_POINTS = 80;
@@ -100,6 +102,7 @@ public class GAlg extends FragmentActivity {
         submenu = menu.addSubMenu(3, SELECT_ALGORITHM, 3, R.string.select_algorithm);
         submenu.add(3, CONVEX_HULL_GW, 0, R.string.algorithm_convex_hull_gw);
         submenu.add(3, CONVEX_HULL_GS, 0, R.string.algorithm_convex_hull_gs);
+        menu.add(1, LINKED_POINTS, 4, R.string.link_points);
 
         return true;
     }
@@ -127,6 +130,9 @@ public class GAlg extends FragmentActivity {
             break;
         case CONVEX_HULL_GS:
             doTheJob(CONVEX_HULL_GS);
+            break;
+        case LINKED_POINTS:
+            pointsRenderer.linkPoints(LINKED_POINTS);
             break;
         default:
             itemHandled = false;

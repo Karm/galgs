@@ -148,7 +148,9 @@ public class Scene {
         case GAlg.CONVEX_HULL_GS:
             results = algorithms.convexHullGrahamScan(verticesCoords);
             break;
-
+        case GAlg.LINKED_POINTS:
+            results = algorithms.linkedPoints(verticesCoords);
+            break;
         default:
             // silence is golden
             break;
