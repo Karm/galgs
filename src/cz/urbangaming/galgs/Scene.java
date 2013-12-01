@@ -48,7 +48,7 @@ public class Scene {
     private List<Point2D> linesCoords = new ArrayList<Point2D>();
     private int vertexCount = 0;
     private int linesVertexCount = 0;
-    private final int vertexStride = COORDS_PER_VERTEX * 4; // bytes per vertex
+    private final int VERTEX_STRIDE = COORDS_PER_VERTEX * 4; // bytes per vertex
     private static final float colorVertices[] = { 1f, 0f, 0f, 1.0f };
     private static final float colorLines[] = { 0f, 1f, 0f, 1.0f };
     private boolean drawLines = false;
@@ -153,7 +153,7 @@ public class Scene {
             // silence is golden
             break;
         }
-        Log.d(GAlg.DEBUG_TAG, "#"+counter+"TIME TAKEN:" + (System.currentTimeMillis() - time));
+        Log.d(GAlg.DEBUG_TAG, "#" + counter + "TIME TAKEN:" + (System.currentTimeMillis() - time));
         counter++;
         // Doesn't make any sense with less than 2 vertices.
         if (results != null && results.size() >= 2) {
@@ -201,7 +201,7 @@ public class Scene {
         GLES20.glEnableVertexAttribArray(mPositionHandle);
 
         // Prepare the scene coordinate data
-        GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, vertexBuffer);
+        GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, VERTEX_STRIDE, vertexBuffer);
 
         // get handle to fragment shader's vColor member
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
@@ -224,13 +224,16 @@ public class Scene {
             GLES20.glUseProgram(mLinesProgram);
             mLinesPositionHandle = GLES20.glGetAttribLocation(mLinesProgram, "vPosition");
             GLES20.glEnableVertexAttribArray(mLinesPositionHandle);
-            GLES20.glVertexAttribPointer(mLinesPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, linesVertexBuffer);
-            mLinesColorHandle = GLES20.glGetUniformLocation(mLinesProgram, "vColor");
-            GLES20.glUniform4fv(mLinesColorHandle, 1, colorLines, 0);
-            int mtrxLineshandle = GLES20.glGetUniformLocation(mLinesProgram, "uMVPMatrix");
-            GLES20.glUniformMatrix4fv(mtrxLineshandle, 1, false, pointsRenderer.mtrxProjectionAndView, 0);
-            GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, linesVertexCount);
-            GLES20.glDisableVertexAttribArray(mLinesPositionHandle);
+            // Prevent null pointer race condition
+            if (linesVertexBuffer != null) {
+                GLES20.glVertexAttribPointer(mLinesPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, VERTEX_STRIDE, linesVertexBuffer);
+                mLinesColorHandle = GLES20.glGetUniformLocation(mLinesProgram, "vColor");
+                GLES20.glUniform4fv(mLinesColorHandle, 1, colorLines, 0);
+                int mtrxLineshandle = GLES20.glGetUniformLocation(mLinesProgram, "uMVPMatrix");
+                GLES20.glUniformMatrix4fv(mtrxLineshandle, 1, false, pointsRenderer.mtrxProjectionAndView, 0);
+                GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, linesVertexCount);
+                GLES20.glDisableVertexAttribArray(mLinesPositionHandle);
+            }
         }
     }
 

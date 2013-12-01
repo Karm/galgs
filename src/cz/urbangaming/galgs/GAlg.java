@@ -1,11 +1,14 @@
 package cz.urbangaming.galgs;
 
-import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.MotionEventCompat;
 import android.util.Log;
 import android.view.Menu;
@@ -20,7 +23,7 @@ import cz.urbangaming.galgs.utils.Point2D;
  * @license GNU GPL 3.0
  * 
  */
-public class GAlg extends Activity {
+public class GAlg extends FragmentActivity {
     public static final String DEBUG_TAG = "KARM";
 
     private PointsRenderer pointsRenderer = null;
@@ -48,7 +51,7 @@ public class GAlg extends Activity {
     public static final int FINGER_ACCURACY = Math.round(POINT_SIZE) * 3;
     // No, it's not very convenient to have points too close to boundaries
     public static final int BORDER_POINT_POSITION = Math.round(POINT_SIZE) * 3;
-    public static final int HOW_MANY_POINTS_GENERATE = Math.round(POINT_SIZE) * 2;
+    public static final int HOW_MANY_POINTS_GENERATE = Math.round(POINT_SIZE) * 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,17 +123,53 @@ public class GAlg extends Activity {
             pointsRenderer.addRandomPoints();
             break;
         case CONVEX_HULL_GW:
-            pointsRenderer.renderAlgorithm(CONVEX_HULL_GW);
+            doTheJob(CONVEX_HULL_GW);
             break;
         case CONVEX_HULL_GS:
-            pointsRenderer.renderAlgorithm(CONVEX_HULL_GS);
+            doTheJob(CONVEX_HULL_GS);
             break;
         default:
             itemHandled = false;
             break;
         }
-
         return itemHandled;
+    }
+
+    private void doTheJob(final int algorithm) {
+        Thread worker = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long time = 0L;
+                time = System.currentTimeMillis();
+                pointsRenderer.renderAlgorithm(algorithm);
+                perflog(System.currentTimeMillis() - time);
+            }
+        });
+        worker.start();
+    }
+
+    private void perflog(long info) {
+        Log.d(DEBUG_TAG, "Computed in " + String.valueOf(info));
+        FireMissilesDialogFragment dialog = new FireMissilesDialogFragment("Computed in " + String.valueOf(info) + " ms");
+        dialog.show(this.getSupportFragmentManager(), "Notice");
+    }
+
+    private class FireMissilesDialogFragment extends DialogFragment {
+        String message = null;
+
+        public FireMissilesDialogFragment(String message) {
+            super();
+            this.message = message;
+        }
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Use the Builder class for convenient dialog construction
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(message);
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
     }
 
     private boolean detectOpenGLES20() {
