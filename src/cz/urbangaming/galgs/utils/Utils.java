@@ -30,12 +30,21 @@ public class Utils {
      * @return
      */
     public static List<Point2D> generateSomeVertices(int howMany, int minX, int minY, int maxX, int maxY) {
+        
+                Point2D[] hhh = new Point2D[] {new Point2D(115.0f, 156.0f), new Point2D(137.0f, 367.0f), new Point2D(262.0f, 440.0f), new Point2D(521.0f, 441.0f), new Point2D(624.0f, 250.0f), new Point2D(476.0f, 19.0f)};
+                List<Point2D> hoo = new ArrayList<Point2D>();
+                for (Point2D point2d : hhh) {
+                    hoo.add(point2d);
+                }
+return hoo;
+/*
         List<Point2D> vertices = new ArrayList<Point2D>(howMany);
         for (int i = 0; i < howMany; i++) {
             vertices.add(new Point2D((float) randInt(minX, maxX), (float) randInt(minY, maxY)));
         }
         // Log.d(GAlg.DEBUG_TAG, "RANDOM VERTICES:"+vertices);
         return vertices;
+        */
     }
 
     /**
@@ -64,6 +73,11 @@ public class Utils {
                 pointToTry.y() >= centerPoint.y() - size && pointToTry.y() <= centerPoint.y() + size;
     }
 
+    /**
+     * Converts to our Point2D utility class
+     * @param scenePoints
+     * @return
+     */
     public static float[] pointVectorToArray(List<Point2D> scenePoints) {
         float[] ret = new float[scenePoints.size() * Scene.COORDS_PER_VERTEX];
         int i = 0;

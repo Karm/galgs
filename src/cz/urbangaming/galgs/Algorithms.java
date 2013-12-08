@@ -6,9 +6,11 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 
+import android.util.Log;
 import cz.urbangaming.galgs.utils.Point2D;
 import cz.urbangaming.galgs.utils.PolarOrderComparator;
 import cz.urbangaming.galgs.utils.Utils;
+import cz.urbangaming.galgs.utils.XYOrderComparator;
 import cz.urbangaming.galgs.utils.YXOrderComparator;
 
 /**
@@ -91,8 +93,92 @@ public class Algorithms {
         }
         return new ArrayList<Point2D>(verticesOnHull);
     }
-    
+
+    /**
+     * Useless call, remove...
+     * 
+     * @param vertices
+     * @return
+     */
     public List<Point2D> linkedPoints(List<Point2D> vertices) {
         return vertices;
     }
+
+    public List<Point2D> sweepTriangulation(List<Point2D> V) {
+        // Sort vertices
+        List<Point2D> originalV = V;
+        Log.d(GAlg.DEBUG_TAG, "UNsorted V:" + V.toString());
+        List<Point2D> triangles = new ArrayList<Point2D>();
+        Collections.sort(V, new XYOrderComparator());
+        Log.d(GAlg.DEBUG_TAG, "Sorted V:" + V.toString());
+        Deque<Point2D> stack = new ArrayDeque<Point2D>();
+        stack.push(V.get(0));
+        stack.push(V.get(1));
+        triangles.add(V.get(0));
+        triangles.add(V.get(1));
+        Log.d(GAlg.DEBUG_TAG, "STACK #1:" + stack.toString());
+        for (int i = 2; i < V.size(); i++) {
+            Point2D p = V.get(i);
+            Log.d(GAlg.DEBUG_TAG, "P is :" + p.toString());
+            if (isAdjacentTo(p, stack.getLast(), originalV) && !isAdjacentTo(p, stack.getFirst(), originalV)) {
+                Point2D top = stack.pop();
+                triangles.add(p);
+                triangles.add(top);
+                while (stack.size() > 1) {
+                    // while (!stack.isEmpty()) {
+                    triangles.add(p);
+                    triangles.add(stack.pop());
+                }
+                Log.d(GAlg.DEBUG_TAG, "STACK #2:" + stack.toString());
+                stack.push(top);
+                stack.push(p);
+                Log.d(GAlg.DEBUG_TAG, "STACK #3:" + stack.toString());
+            } else if (!isAdjacentTo(p, stack.getLast(), originalV) && isAdjacentTo(p, stack.getFirst(), originalV)) {
+                // toArray? Really? This is so freakin wrong!
+                Log.d(GAlg.DEBUG_TAG, "STACK #4:" + stack.toString());
+                while (stack.size() > 1 && Utils.ccw(p, (Point2D) stack.toArray()[0], (Point2D) stack.toArray()[1]) > 0) {
+                    triangles.add(p);
+                    triangles.add((Point2D) stack.toArray()[1]);
+                    stack.pop();
+                    Log.d(GAlg.DEBUG_TAG, "STACK # W 5:" + stack.toString());
+                }
+                stack.push(p);
+                Log.d(GAlg.DEBUG_TAG, "STACK #6:" + stack.toString());
+            } else if (isAdjacentTo(p, stack.getLast(), originalV) && isAdjacentTo(p, stack.getFirst(), originalV)) {
+                Object[] stackAsArray = stack.toArray();
+                for (int k = 1; k < stackAsArray.length - 1; k++) {
+                    triangles.add(p);
+                    triangles.add((Point2D) stackAsArray[k]);
+                }
+                Log.d(GAlg.DEBUG_TAG, "STACK #Almost END:" + stack.toString());
+                break;
+            } else {
+                Log.d(GAlg.DEBUG_TAG, "IS THIS ERROR?");
+            }
+        }
+        Log.d(GAlg.DEBUG_TAG, "STACK #END:" + stack.toString());
+        Log.d(GAlg.DEBUG_TAG, "Triangles:" + triangles.toString());
+        return triangles;
+    }
+
+    public boolean isAdjacentTo(Point2D a, Point2D b, List<Point2D> points) {
+        int indexA = points.indexOf(a);
+        if (indexA < 0 || indexA > points.size() - 1) {
+            Log.d(GAlg.DEBUG_TAG, "isAdjacentTo(" + a + "," + b + "): Err");
+            return false;
+        }
+        int indexBL = indexA - 1;
+        int indexBR = indexA + 1;
+        if (indexBL >= 0 && indexBL < points.size() && points.get(indexBL).equals(b)) {
+            Log.d(GAlg.DEBUG_TAG, "isAdjacentTo(" + a + "," + b + "): True");
+            return true;
+        }
+        if (indexBR >= 0 && indexBR < points.size() && points.get(indexBR).equals(b)) {
+            Log.d(GAlg.DEBUG_TAG, "isAdjacentTo(" + a + "," + b + "): True");
+            return true;
+        }
+        Log.d(GAlg.DEBUG_TAG, "isAdjacentTo(" + a + "," + b + "): False");
+        return false;
+    }
+
 }

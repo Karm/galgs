@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">GAlgs</string>    
+    <string name="app_name">GAlgs</string>
     <string name="workmode_delete">Delete mode</string>
     <string name="workmode_add">Add mode</string>
     <string name="workmode_edit">Edit mode</string>
@@ -12,5 +12,6 @@
     <string name="algorithm_convex_hull_gw">Convex hull GW</string>
     <string name="algorithm_convex_hull_gs">Convex hull GS</string>
     <string name="link_points">Link points</string>
+    <string name="algorithm_sweep_triangulation">Triangulate</string>
 
 </resources>

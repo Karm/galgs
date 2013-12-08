@@ -151,6 +151,9 @@ public class Scene {
         case GAlg.LINKED_POINTS:
             results = algorithms.linkedPoints(verticesCoords);
             break;
+        case GAlg.SWEEP_TRIANGULATION:
+            results = algorithms.sweepTriangulation(verticesCoords);
+            break;
         default:
             // silence is golden
             break;
@@ -233,7 +236,10 @@ public class Scene {
                 GLES20.glUniform4fv(mLinesColorHandle, 1, colorLines, 0);
                 int mtrxLineshandle = GLES20.glGetUniformLocation(mLinesProgram, "uMVPMatrix");
                 GLES20.glUniformMatrix4fv(mtrxLineshandle, 1, false, pointsRenderer.mtrxProjectionAndView, 0);
-                GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, linesVertexCount);
+                //GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, linesVertexCount);
+                GLES20.glDrawArrays(GLES20.GL_LINES, 0, linesVertexCount);
+                //GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, linesVertexCount);
+                //GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, linesVertexCount);
                 GLES20.glDisableVertexAttribArray(mLinesPositionHandle);
             }
         }
