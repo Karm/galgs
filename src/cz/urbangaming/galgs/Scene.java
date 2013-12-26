@@ -58,6 +58,8 @@ public class Scene {
     private int selectedVertexIndex = -1;
     private boolean vertexSelected = false;
 
+    private int renderMethod = GLES20.GL_LINE_LOOP;
+
     public Scene(PointsRenderer pointsRenderer) {
         this.pointsRenderer = pointsRenderer;
         newVertexBufferToDraw();
@@ -144,15 +146,23 @@ public class Scene {
         switch (algorithmUsed) {
         case GAlg.CONVEX_HULL_GW:
             results = algorithms.convexHullGiftWrapping(verticesCoords);
+            renderMethod = GLES20.GL_LINE_LOOP;
             break;
         case GAlg.CONVEX_HULL_GS:
             results = algorithms.convexHullGrahamScan(verticesCoords);
+            renderMethod = GLES20.GL_LINE_LOOP;
             break;
         case GAlg.LINKED_POINTS:
             results = algorithms.linkedPoints(verticesCoords);
+            renderMethod = GLES20.GL_LINE_LOOP;
             break;
         case GAlg.SWEEP_TRIANGULATION:
             results = algorithms.sweepTriangulation(verticesCoords);
+            renderMethod = GLES20.GL_LINES;
+            break;
+        case GAlg.NAIVE_TRIANGULATION:
+            results = algorithms.naiveTriangulation(verticesCoords);
+            renderMethod = GLES20.GL_LINES;
             break;
         default:
             // silence is golden
@@ -237,9 +247,10 @@ public class Scene {
                 int mtrxLineshandle = GLES20.glGetUniformLocation(mLinesProgram, "uMVPMatrix");
                 GLES20.glUniformMatrix4fv(mtrxLineshandle, 1, false, pointsRenderer.mtrxProjectionAndView, 0);
                 //GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, linesVertexCount);
-                GLES20.glDrawArrays(GLES20.GL_LINES, 0, linesVertexCount);
+                //GLES20.glDrawArrays(GLES20.GL_LINES, 0, linesVertexCount);
                 //GLES20.glDrawArrays(GLES20.GL_LINE_LOOP, 0, linesVertexCount);
                 //GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, linesVertexCount);
+                GLES20.glDrawArrays(renderMethod, 0, linesVertexCount);
                 GLES20.glDisableVertexAttribArray(mLinesPositionHandle);
             }
         }

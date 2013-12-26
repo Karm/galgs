@@ -39,7 +39,7 @@ public class GAlg extends FragmentActivity {
     public static final int CONVEX_HULL_GS = 61;
     public static final int LINKED_POINTS = 62;
     public static final int SWEEP_TRIANGULATION = 63;
-
+    public static final int NAIVE_TRIANGULATION = 64;
 
     public static final int REMOVE_ALL_POINTS = 70;
     public static final int ADD_RANDOM_POINTS = 80;
@@ -104,6 +104,7 @@ public class GAlg extends FragmentActivity {
         submenu.add(3, CONVEX_HULL_GW, 0, R.string.algorithm_convex_hull_gw);
         submenu.add(3, CONVEX_HULL_GS, 0, R.string.algorithm_convex_hull_gs);
         submenu.add(3, SWEEP_TRIANGULATION, 0, R.string.algorithm_sweep_triangulation);
+        submenu.add(3, NAIVE_TRIANGULATION, 0, R.string.algorithm_naive_triangulation);
         menu.add(1, LINKED_POINTS, 4, R.string.link_points);
 
         return true;
@@ -139,6 +140,9 @@ public class GAlg extends FragmentActivity {
         case SWEEP_TRIANGULATION:
             doTheJob(SWEEP_TRIANGULATION);
             break;
+        case NAIVE_TRIANGULATION:
+            doTheJob(NAIVE_TRIANGULATION);
+            break;
         default:
             itemHandled = false;
             break;
@@ -161,14 +165,14 @@ public class GAlg extends FragmentActivity {
 
     private void perflog(long info) {
         Log.d(DEBUG_TAG, "Computed in " + String.valueOf(info));
-        FireMissilesDialogFragment dialog = new FireMissilesDialogFragment("Computed in " + String.valueOf(info) + " ms");
+        MyDialogFragment dialog = new MyDialogFragment("Computed in " + String.valueOf(info) + " ms");
         dialog.show(this.getSupportFragmentManager(), "Notice");
     }
 
-    private class FireMissilesDialogFragment extends DialogFragment {
+    private class MyDialogFragment extends DialogFragment {
         String message = null;
 
-        public FireMissilesDialogFragment(String message) {
+        public MyDialogFragment(String message) {
             super();
             this.message = message;
         }
