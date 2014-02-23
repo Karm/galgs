@@ -12,7 +12,11 @@
     <string name="algorithm_convex_hull_gw">Convex hull GW</string>
     <string name="algorithm_convex_hull_gs">Convex hull GS</string>
     <string name="link_points">Link points</string>
+    <string name="ruby_activity">Ruby activity</string>
     <string name="algorithm_sweep_triangulation">Triangulate: Sweep [Buggy]</string>
     <string name="algorithm_naive_triangulation">Triangulate: Naive [Works]</string>
+    <string name="title_activity_ruby">RubyActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
 
 </resources>

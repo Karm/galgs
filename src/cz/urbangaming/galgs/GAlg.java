@@ -4,6 +4,7 @@ import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ConfigurationInfo;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -38,6 +39,8 @@ public class GAlg extends FragmentActivity {
     public static final int CONVEX_HULL_GW = 60;
     public static final int CONVEX_HULL_GS = 61;
     public static final int LINKED_POINTS = 62;
+    public static final int RUBY_ACTIVITY = 666;
+
     public static final int SWEEP_TRIANGULATION = 63;
     public static final int NAIVE_TRIANGULATION = 64;
 
@@ -106,6 +109,7 @@ public class GAlg extends FragmentActivity {
         submenu.add(3, SWEEP_TRIANGULATION, 0, R.string.algorithm_sweep_triangulation);
         submenu.add(3, NAIVE_TRIANGULATION, 0, R.string.algorithm_naive_triangulation);
         menu.add(1, LINKED_POINTS, 4, R.string.link_points);
+        menu.add(1, RUBY_ACTIVITY, 5, R.string.ruby_activity);
 
         return true;
     }
@@ -143,6 +147,10 @@ public class GAlg extends FragmentActivity {
         case NAIVE_TRIANGULATION:
             doTheJob(NAIVE_TRIANGULATION);
             break;
+        case RUBY_ACTIVITY:
+            Intent intent = new Intent(this, RubyActivity.class);
+            startActivityForResult(intent, RUBY_ACTIVITY);
+            break;
         default:
             itemHandled = false;
             break;
@@ -163,6 +171,24 @@ public class GAlg extends FragmentActivity {
         worker.start();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Check which request we're responding to
+        if (requestCode == RUBY_ACTIVITY) {
+            // Make sure the request was successful
+            if (resultCode == RESULT_OK) {
+                // The user picked a contact.
+                // The Intent's data Uri identifies which contact was selected.
+                Bundle res = data.getExtras();
+                String result = res.getString("param_result");
+                MyDialogFragment dialog = new MyDialogFragment(result);
+                dialog.show(this.getSupportFragmentManager(), "Notice");
+
+                // Do something with the contact here (bigger example below)
+            }
+        }
+    }
+    
     private void perflog(long info) {
         Log.d(DEBUG_TAG, "Computed in " + String.valueOf(info));
         MyDialogFragment dialog = new MyDialogFragment("Computed in " + String.valueOf(info) + " ms");
