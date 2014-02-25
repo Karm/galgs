@@ -1,10 +1,14 @@
 package cz.urbangaming.galgs;
 
+import org.ruboto.JRubyAdapter;
+import org.ruboto.RubotoComponent;
+import org.ruboto.ScriptInfo;
+import org.ruboto.ScriptLoader;
+
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ConfigurationInfo;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -148,8 +152,39 @@ public class GAlg extends FragmentActivity {
             doTheJob(NAIVE_TRIANGULATION);
             break;
         case RUBY_ACTIVITY:
-            Intent intent = new Intent(this, RubyActivity.class);
-            startActivityForResult(intent, RUBY_ACTIVITY);
+            //Intent intent = new Intent(this, RubyActivity.class);
+            //startActivityForResult(intent, RUBY_ACTIVITY);
+
+            RubotoComponent rbotoComponent = new RubotoComponent() {
+                final ScriptInfo scriptInfo = new ScriptInfo();
+
+                @Override
+                public ScriptInfo getScriptInfo() {
+                    return scriptInfo;
+                }
+            };
+            rbotoComponent.getScriptInfo().setRubyClassName("KarmTest");
+           // rbotoComponent.getScriptInfo().setFromIntent(getIntent());
+
+            JRubyAdapter.setUpJRuby(this);
+            //02-25 12:16:47.143: D/RUBOTO(31283): setRubyClassName with:RGALGSActivity
+            if (JRubyAdapter.isInitialized()) {
+                if (rbotoComponent.getScriptInfo().isReadyToLoad()) {
+                    ScriptLoader.loadScript(rbotoComponent);
+                    String rubyClassName = rbotoComponent.getScriptInfo().getRubyClassName();
+                    Log.d(DEBUG_TAG, "RUBY RESULT rubyClassName: " + rubyClassName);
+                    Object rubyInstance = rbotoComponent.getScriptInfo().getRubyInstance();
+                    Log.d(DEBUG_TAG, "RUBY RESULT rubyInstance: " + rubyInstance);
+                    Object result = JRubyAdapter.runRubyMethod(rubyInstance, "butterfly");
+                    Log.d(DEBUG_TAG, "RUBY RESULT params: " + result);
+                } else {
+                    Log.d(DEBUG_TAG, "RUBY RESULT scriptInfo is not ready to load.");
+
+                }
+            } else {
+                Log.d(DEBUG_TAG, "RUBY RESULT JRubyAdapter is not initialized.");
+
+            }
             break;
         default:
             itemHandled = false;
@@ -171,24 +206,30 @@ public class GAlg extends FragmentActivity {
         worker.start();
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // Check which request we're responding to
-        if (requestCode == RUBY_ACTIVITY) {
-            // Make sure the request was successful
-            if (resultCode == RESULT_OK) {
-                // The user picked a contact.
-                // The Intent's data Uri identifies which contact was selected.
-                Bundle res = data.getExtras();
-                String result = res.getString("param_result");
-                MyDialogFragment dialog = new MyDialogFragment(result);
-                dialog.show(this.getSupportFragmentManager(), "Notice");
+    /*
+     * @Override
+     * protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+     * // Check which request we're responding to
+     * if (requestCode == RUBY_ACTIVITY) {
+     * // Make sure the request was successful
+     * //if (resultCode == RESULT_OK) {
+     * // The user picked a contact.
+     * // The Intent's data Uri identifies which contact was selected.
+     * if(data!=null) {
+     * Bundle res = data.getExtras();
+     * Log.d(DEBUG_TAG, "RUBY RESULT bundle " + res.toString());
+     * String result = res.getString("param_result");
+     * Log.d(DEBUG_TAG, "RUBY RESULT params: " + result);
+     * } else{
+     * Log.d(DEBUG_TAG, "RUBY RESULT DATA is NULL, requestCode: " + requestCode + ", resultcode: "+resultCode);
+     * 
+     * }
+     * // Do something with the contact here (bigger example below)
+     * //}
+     * }
+     * }
+     */
 
-                // Do something with the contact here (bigger example below)
-            }
-        }
-    }
-    
     private void perflog(long info) {
         Log.d(DEBUG_TAG, "Computed in " + String.valueOf(info));
         MyDialogFragment dialog = new MyDialogFragment("Computed in " + String.valueOf(info) + " ms");

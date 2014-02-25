@@ -116,8 +116,9 @@ public class ScriptLoader {
     }
 
     private static void persistObjectProxy(RubotoComponent component) {
-        JRubyAdapter.runScriptlet("Java::" + component.getClass().getName() + ".__persistent__ = true");
-        ((Map)JRubyAdapter.get("RUBOTO_JAVA_PROXIES")).put(component.getScriptInfo().getRubyInstance(), component.getScriptInfo().getRubyInstance());
+        //TODO Karm: OMG, What have I done?
+        //JRubyAdapter.runScriptlet("Java::" + component.getClass().getName() + ".__persistent__ = true");
+        //((Map)JRubyAdapter.get("RUBOTO_JAVA_PROXIES")).put(component.getScriptInfo().getRubyInstance(), component.getScriptInfo().getRubyInstance());
     }
 
     public static void unloadScript(RubotoComponent component) {

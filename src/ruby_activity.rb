@@ -3,8 +3,7 @@ require 'ruboto/util/toast'
 
 ruboto_import_widgets :Button, :LinearLayout, :TextView
 
-import 'android.os.Bundle'
-import 'android.content.Intent'
+# http://xkcd.com/378/
 
 class RubyActivity
   def onCreate(bundle)
@@ -28,14 +27,8 @@ class RubyActivity
   private
 
   def butterfly
-     conData = Bundle.new()
-     conData.putString("results", "Thanks Thanks")
-     intent = Intent.new()
-     intent.putExtras(conData);
-     setResult(RESULT_OK, intent);
-     finish()
-    #@text_view.text = 'What hath Matz wrought!'
-    #toast 'Flipped a bit via butterfly'
+    @text_view.text = 'What hath Matz wrought!'
+    toast 'Flipped a bit via butterfly'
   end
 
 end
