@@ -31,6 +31,16 @@ import cz.urbangaming.galgs.utils.Point2D;
 public class GAlg extends FragmentActivity {
     public static final String DEBUG_TAG = "KARM";
 
+    // Ruby integration
+    private final RubotoComponent rbotoComponent = new RubotoComponent() {
+        final ScriptInfo scriptInfo = new ScriptInfo();
+
+        @Override
+        public ScriptInfo getScriptInfo() {
+            return scriptInfo;
+        }
+    };
+
     private PointsRenderer pointsRenderer = null;
 
     // Menus begin
@@ -152,45 +162,31 @@ public class GAlg extends FragmentActivity {
             doTheJob(NAIVE_TRIANGULATION);
             break;
         case RUBY_ACTIVITY:
-            //Intent intent = new Intent(this, RubyActivity.class);
-            //startActivityForResult(intent, RUBY_ACTIVITY);
-
-            RubotoComponent rbotoComponent = new RubotoComponent() {
-                final ScriptInfo scriptInfo = new ScriptInfo();
-
-                @Override
-                public ScriptInfo getScriptInfo() {
-                    return scriptInfo;
-                }
-            };
-            rbotoComponent.getScriptInfo().setRubyClassName("KarmTest");
-           // rbotoComponent.getScriptInfo().setFromIntent(getIntent());
-
-            JRubyAdapter.setUpJRuby(this);
-            //02-25 12:16:47.143: D/RUBOTO(31283): setRubyClassName with:RGALGSActivity
-            if (JRubyAdapter.isInitialized()) {
-                if (rbotoComponent.getScriptInfo().isReadyToLoad()) {
-                    ScriptLoader.loadScript(rbotoComponent);
-                    String rubyClassName = rbotoComponent.getScriptInfo().getRubyClassName();
-                    Log.d(DEBUG_TAG, "RUBY RESULT rubyClassName: " + rubyClassName);
-                    Object rubyInstance = rbotoComponent.getScriptInfo().getRubyInstance();
-                    Log.d(DEBUG_TAG, "RUBY RESULT rubyInstance: " + rubyInstance);
-                    Object result = JRubyAdapter.runRubyMethod(rubyInstance, "butterfly");
-                    Log.d(DEBUG_TAG, "RUBY RESULT params: " + result);
-                } else {
-                    Log.d(DEBUG_TAG, "RUBY RESULT scriptInfo is not ready to load.");
-
-                }
-            } else {
-                Log.d(DEBUG_TAG, "RUBY RESULT JRubyAdapter is not initialized.");
-
-            }
+            manipulateSceneWithRuby("butterfly");
             break;
         default:
             itemHandled = false;
             break;
         }
         return itemHandled;
+    }
+
+    private void manipulateSceneWithRuby(String scriptMethod) {
+        rbotoComponent.getScriptInfo().setRubyClassName("KarmTest");
+        JRubyAdapter.setUpJRuby(this);
+        if (JRubyAdapter.isInitialized()) {
+            if (rbotoComponent.getScriptInfo().isReadyToLoad()) {
+                ScriptLoader.loadScript(rbotoComponent);
+                //String rubyClassName = rbotoComponent.getScriptInfo().getRubyClassName();
+                Object rubyInstance = rbotoComponent.getScriptInfo().getRubyInstance();
+                Object result = JRubyAdapter.runRubyMethod(rubyInstance, scriptMethod, 666);
+                Log.d(DEBUG_TAG, "RUBY RESULT params: " + result);
+            } else {
+                Log.d(DEBUG_TAG, "RUBY RESULT scriptInfo is not ready to load.");
+            }
+        } else {
+            Log.d(DEBUG_TAG, "RUBY RESULT JRubyAdapter is not initialized.");
+        }
     }
 
     private void doTheJob(final int algorithm) {
@@ -205,30 +201,6 @@ public class GAlg extends FragmentActivity {
         });
         worker.start();
     }
-
-    /*
-     * @Override
-     * protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-     * // Check which request we're responding to
-     * if (requestCode == RUBY_ACTIVITY) {
-     * // Make sure the request was successful
-     * //if (resultCode == RESULT_OK) {
-     * // The user picked a contact.
-     * // The Intent's data Uri identifies which contact was selected.
-     * if(data!=null) {
-     * Bundle res = data.getExtras();
-     * Log.d(DEBUG_TAG, "RUBY RESULT bundle " + res.toString());
-     * String result = res.getString("param_result");
-     * Log.d(DEBUG_TAG, "RUBY RESULT params: " + result);
-     * } else{
-     * Log.d(DEBUG_TAG, "RUBY RESULT DATA is NULL, requestCode: " + requestCode + ", resultcode: "+resultCode);
-     * 
-     * }
-     * // Do something with the contact here (bigger example below)
-     * //}
-     * }
-     * }
-     */
 
     private void perflog(long info) {
         Log.d(DEBUG_TAG, "Computed in " + String.valueOf(info));
