@@ -8,6 +8,7 @@ import java.util.List;
 
 import android.opengl.GLES20;
 import android.util.Log;
+import android.util.Pair;
 import cz.urbangaming.galgs.utils.Point2D;
 import cz.urbangaming.galgs.utils.Utils;
 
@@ -141,28 +142,28 @@ public class Scene {
 
     public void renderLines(int algorithmUsed) {
         linesCoords.clear();
-        List<Point2D> results = null;
+        Pair<List<Point2D>, Integer> results = null;
         long time = System.currentTimeMillis();
         switch (algorithmUsed) {
         case GAlg.CONVEX_HULL_GW:
             results = algorithms.convexHullGiftWrapping(verticesCoords);
-            renderMethod = GLES20.GL_LINE_LOOP;
+            renderMethod = results.second;
             break;
         case GAlg.CONVEX_HULL_GS:
             results = algorithms.convexHullGrahamScan(verticesCoords);
-            renderMethod = GLES20.GL_LINE_LOOP;
+            renderMethod = results.second;
             break;
         case GAlg.LINKED_POINTS:
             results = algorithms.linkedPoints(verticesCoords);
-            renderMethod = GLES20.GL_LINE_LOOP;
+            renderMethod = results.second;
             break;
         case GAlg.SWEEP_TRIANGULATION:
             results = algorithms.sweepTriangulation(verticesCoords);
-            renderMethod = GLES20.GL_LINES;
+            renderMethod = results.second;
             break;
         case GAlg.NAIVE_TRIANGULATION:
             results = algorithms.naiveTriangulation(verticesCoords);
-            renderMethod = GLES20.GL_LINES;
+            renderMethod = results.second;
             break;
         default:
             // silence is golden
@@ -171,8 +172,8 @@ public class Scene {
         Log.d(GAlg.DEBUG_TAG, "#" + counter + "TIME TAKEN:" + (System.currentTimeMillis() - time));
         counter++;
         // Doesn't make any sense with less than 2 vertices.
-        if (results != null && results.size() >= 2) {
-            linesCoords.addAll(results);
+        if (results != null && results.first != null && results.first.size() >= 2) {
+            linesCoords.addAll(results.first);
             drawLines = true;
             newVertexBufferToDraw();
         }

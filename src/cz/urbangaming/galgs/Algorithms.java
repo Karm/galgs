@@ -6,7 +6,9 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 
+import android.opengl.GLES20;
 import android.util.Log;
+import android.util.Pair;
 import cz.urbangaming.galgs.utils.Point2D;
 import cz.urbangaming.galgs.utils.PolarOrderComparator;
 import cz.urbangaming.galgs.utils.Utils;
@@ -27,7 +29,7 @@ public class Algorithms {
      * @param vertices
      * @return
      */
-    public List<Point2D> convexHullGiftWrapping(List<Point2D> points) {
+    public Pair<List<Point2D>, Integer> convexHullGiftWrapping(List<Point2D> points) {
         if (points.size() > 3) {
             Collections.sort(points, new YXOrderComparator());
             // isn't it rather clumsy?
@@ -46,9 +48,9 @@ public class Algorithms {
                 vertexOnTheHull = currentVertex;
             } while (!currentVertex.equals(verticesOnHull.get(0)));
             // Log.d(GAlg.DEBUG_TAG, "RIGHTMOST BOTTOM:" + vertexOnHull);
-            return verticesOnHull;
+            return new Pair<List<Point2D>, Integer>(verticesOnHull, GLES20.GL_LINE_LOOP);
         } else {
-            return points;
+            return new Pair<List<Point2D>, Integer>(points, GLES20.GL_LINE_LOOP);
         }
     }
 
@@ -59,7 +61,7 @@ public class Algorithms {
      * @param vertices
      * @return
      */
-    public List<Point2D> convexHullGrahamScan(List<Point2D> vertices) {
+    public Pair<List<Point2D>, Integer> convexHullGrahamScan(List<Point2D> vertices) {
         Deque<Point2D> verticesOnHull = new ArrayDeque<Point2D>();
         Collections.sort(vertices, new YXOrderComparator());
         Collections.sort(vertices, new PolarOrderComparator(vertices.get(0)));
@@ -91,10 +93,10 @@ public class Algorithms {
             verticesOnHull.push(top);
             verticesOnHull.push(vertices.get(i));
         }
-        return new ArrayList<Point2D>(verticesOnHull);
+        return new Pair<List<Point2D>, Integer>(new ArrayList<Point2D>(verticesOnHull), GLES20.GL_LINE_LOOP);
     }
 
-    public boolean linesIntersect(double pointAx, double pointAy, double pointBx, double pointBy, double pointCx, double pointCy, double pointDx, double pointDy) {
+    private boolean linesIntersect(double pointAx, double pointAy, double pointBx, double pointBy, double pointCx, double pointCy, double pointDx, double pointDy) {
         // intersection point
         double intersectX = 0d;
         double intersectY = 0d;
@@ -125,7 +127,7 @@ public class Algorithms {
         return false; // No collision
     }
 
-    public boolean linesIntersect(Point2D a, Point2D b, Point2D c, Point2D d) {
+    private boolean linesIntersect(Point2D a, Point2D b, Point2D c, Point2D d) {
         return linesIntersect(a.x(), a.y(), b.x(), b.y(), c.x(), c.y(), d.x(), d.y());
     }
 
@@ -135,11 +137,11 @@ public class Algorithms {
      * @param vertices
      * @return
      */
-    public List<Point2D> linkedPoints(List<Point2D> vertices) {
-        return vertices;
+    public Pair<List<Point2D>, Integer> linkedPoints(List<Point2D> vertices) {
+        return new Pair<List<Point2D>, Integer>(vertices, GLES20.GL_LINE_LOOP);
     }
 
-    public boolean isItLegalDiagonal(Point2D a, Point2D b, List<Point2D> polygon) {
+    private boolean isItLegalDiagonal(Point2D a, Point2D b, List<Point2D> polygon) {
         boolean isItLegal = true;
         for (int i = 0; i < polygon.size(); i++) {
             if (i < polygon.size() - 1) {
@@ -167,7 +169,7 @@ public class Algorithms {
      * @param orderedPolygon
      * @return
      */
-    public boolean areOnTheSameChain(Point2D a, Point2D b, List<Point2D> orderedPolygon) {
+    private boolean areOnTheSameChain(Point2D a, Point2D b, List<Point2D> orderedPolygon) {
         Point2D pivot = orderedPolygon.get(orderedPolygon.size() / 2);
         boolean returnValue = false;
         if ((b.x() < pivot.x() && a.x() < pivot.x()) || (b.x() > pivot.x() && a.x() > pivot.x())) {
@@ -187,7 +189,7 @@ public class Algorithms {
      * @param V
      * @return
      */
-    public List<Point2D> sweepTriangulation(List<Point2D> V) {
+    public Pair<List<Point2D>, Integer> sweepTriangulation(List<Point2D> V) {
         List<Point2D> originalV = new ArrayList<Point2D>(V);
         Collections.sort(V, new XYOrderComparator());
         List<Point2D> triangles = new ArrayList<Point2D>();
@@ -231,7 +233,7 @@ public class Algorithms {
         //First and last from boundary
         triangles.add(originalV.get(0));
         triangles.add(originalV.get(originalV.size() - 1));
-        return triangles;
+        return new Pair<List<Point2D>, Integer>(triangles, GLES20.GL_LINES);
     }
 
     /**
@@ -240,7 +242,7 @@ public class Algorithms {
      * @param V
      * @return
      */
-    public List<Point2D> naiveTriangulation(List<Point2D> V) {
+    public Pair<List<Point2D>, Integer> naiveTriangulation(List<Point2D> V) {
         Collections.sort(V, new XYOrderComparator());
         List<Point2D> triangles = new ArrayList<Point2D>();
         Log.d(GAlg.DEBUG_TAG, "Sorted V:" + V.toString());
@@ -254,6 +256,6 @@ public class Algorithms {
                 }
             }
         }
-        return triangles;
+        return new Pair<List<Point2D>, Integer>(triangles, GLES20.GL_LINES);
     }
 }
