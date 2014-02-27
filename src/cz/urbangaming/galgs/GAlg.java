@@ -179,6 +179,8 @@ public class GAlg extends FragmentActivity {
                 ScriptLoader.loadScript(rbotoComponent);
                 //String rubyClassName = rbotoComponent.getScriptInfo().getRubyClassName();
                 Object rubyInstance = rbotoComponent.getScriptInfo().getRubyInstance();
+                
+                //pointsRenderer. ??? No, let's do it in Algorithms clas...
                 Object result = JRubyAdapter.runRubyMethod(rubyInstance, scriptMethod, 666);
                 Log.d(DEBUG_TAG, "RUBY RESULT params: " + result);
             } else {

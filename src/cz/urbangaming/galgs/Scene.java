@@ -130,6 +130,7 @@ public class Scene {
     public void removeVertex(Point2D point2d) {
         List<Point2D> newSceneCoords = verticesCoords;
         // Brutal force...
+        //TODO: Divide search space
         for (int i = 0; i < verticesCoords.size(); i++) {
             if (Utils.isInRectangle(point2d, GAlg.FINGER_ACCURACY, verticesCoords.get(i))) {
                 newSceneCoords.remove(i);
