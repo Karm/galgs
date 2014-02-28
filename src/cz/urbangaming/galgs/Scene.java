@@ -148,28 +148,29 @@ public class Scene {
         switch (algorithmUsed) {
         case GAlg.CONVEX_HULL_GW:
             results = algorithms.convexHullGiftWrapping(verticesCoords);
-            renderMethod = results.second;
             break;
         case GAlg.CONVEX_HULL_GS:
             results = algorithms.convexHullGrahamScan(verticesCoords);
-            renderMethod = results.second;
             break;
         case GAlg.LINKED_POINTS:
             results = algorithms.linkedPoints(verticesCoords);
-            renderMethod = results.second;
             break;
         case GAlg.SWEEP_TRIANGULATION:
             results = algorithms.sweepTriangulation(verticesCoords);
-            renderMethod = results.second;
             break;
         case GAlg.NAIVE_TRIANGULATION:
             results = algorithms.naiveTriangulation(verticesCoords);
-            renderMethod = results.second;
+            break;
+        case GAlg.LINKED_POINTS_RUBY:
+            results = algorithms.manipulateSceneWithRuby(verticesCoords);
             break;
         default:
             // silence is golden
             break;
         }
+
+        renderMethod = (results != null) ? results.second : /* default */GLES20.GL_POINTS;
+
         Log.d(GAlg.DEBUG_TAG, "#" + counter + "TIME TAKEN:" + (System.currentTimeMillis() - time));
         counter++;
         // Doesn't make any sense with less than 2 vertices.

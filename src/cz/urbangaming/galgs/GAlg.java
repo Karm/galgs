@@ -31,16 +31,6 @@ import cz.urbangaming.galgs.utils.Point2D;
 public class GAlg extends FragmentActivity {
     public static final String DEBUG_TAG = "KARM";
 
-    // Ruby integration
-    private final RubotoComponent rbotoComponent = new RubotoComponent() {
-        final ScriptInfo scriptInfo = new ScriptInfo();
-
-        @Override
-        public ScriptInfo getScriptInfo() {
-            return scriptInfo;
-        }
-    };
-
     private PointsRenderer pointsRenderer = null;
 
     // Menus begin
@@ -53,7 +43,7 @@ public class GAlg extends FragmentActivity {
     public static final int CONVEX_HULL_GW = 60;
     public static final int CONVEX_HULL_GS = 61;
     public static final int LINKED_POINTS = 62;
-    public static final int RUBY_ACTIVITY = 666;
+    public static final int LINKED_POINTS_RUBY = 666;
 
     public static final int SWEEP_TRIANGULATION = 63;
     public static final int NAIVE_TRIANGULATION = 64;
@@ -123,7 +113,7 @@ public class GAlg extends FragmentActivity {
         submenu.add(3, SWEEP_TRIANGULATION, 0, R.string.algorithm_sweep_triangulation);
         submenu.add(3, NAIVE_TRIANGULATION, 0, R.string.algorithm_naive_triangulation);
         menu.add(1, LINKED_POINTS, 4, R.string.link_points);
-        menu.add(1, RUBY_ACTIVITY, 5, R.string.ruby_activity);
+        menu.add(1, LINKED_POINTS_RUBY, 5, R.string.link_points_ruby);
 
         return true;
     }
@@ -161,34 +151,15 @@ public class GAlg extends FragmentActivity {
         case NAIVE_TRIANGULATION:
             doTheJob(NAIVE_TRIANGULATION);
             break;
-        case RUBY_ACTIVITY:
-            manipulateSceneWithRuby("butterfly");
+        case LINKED_POINTS_RUBY:
+            JRubyAdapter.setUpJRuby(this);
+            doTheJob(LINKED_POINTS_RUBY);
             break;
         default:
             itemHandled = false;
             break;
         }
         return itemHandled;
-    }
-
-    private void manipulateSceneWithRuby(String scriptMethod) {
-        rbotoComponent.getScriptInfo().setRubyClassName("KarmTest");
-        JRubyAdapter.setUpJRuby(this);
-        if (JRubyAdapter.isInitialized()) {
-            if (rbotoComponent.getScriptInfo().isReadyToLoad()) {
-                ScriptLoader.loadScript(rbotoComponent);
-                //String rubyClassName = rbotoComponent.getScriptInfo().getRubyClassName();
-                Object rubyInstance = rbotoComponent.getScriptInfo().getRubyInstance();
-                
-                //pointsRenderer. ??? No, let's do it in Algorithms clas...
-                Object result = JRubyAdapter.runRubyMethod(rubyInstance, scriptMethod, 666);
-                Log.d(DEBUG_TAG, "RUBY RESULT params: " + result);
-            } else {
-                Log.d(DEBUG_TAG, "RUBY RESULT scriptInfo is not ready to load.");
-            }
-        } else {
-            Log.d(DEBUG_TAG, "RUBY RESULT JRubyAdapter is not initialized.");
-        }
     }
 
     private void doTheJob(final int algorithm) {
