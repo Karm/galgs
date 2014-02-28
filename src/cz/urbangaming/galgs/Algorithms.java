@@ -43,9 +43,8 @@ public class Algorithms {
      * @param points
      * @return
      */
-    public Pair<List<Point2D>, Integer> manipulateSceneWithRuby(List<Point2D> points) {
-        String scriptMethod = "butterfly";
-        rbotoComponent.getScriptInfo().setRubyClassName("KarmTest");
+    public Pair<List<Point2D>, Integer> manipulateSceneWithRuby(List<Point2D> points, String scriptMethod) {
+        rbotoComponent.getScriptInfo().setRubyClassName("GalgAlgorithms");
         if (JRubyAdapter.isInitialized()) {
             if (rbotoComponent.getScriptInfo().isReadyToLoad()) {
                 ScriptLoader.loadScript(rbotoComponent);

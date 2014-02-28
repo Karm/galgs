@@ -26,27 +26,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="org.ruboto.RubotoActivity"
-            android:exported="false" />
-        <activity
-            android:name="org.ruboto.SplashActivity"
-            android:configChanges="orientation|screenSize"
-            android:exported="false"
-            android:noHistory="true" />
-        <activity
-            android:name="org.ruboto.RubotoDialog"
-            android:exported="false"
-            android:theme="@android:style/Theme.Dialog" />
-
-        <service
-            android:name="org.ruboto.RubotoService"
-            android:exported="false" />
-
-        <activity
-            android:name="cz.urbangaming.galgs.RubyActivity"
-            android:label="@string/title_activity_ruby" >
-        </activity>
+       
     </application>
 
 </manifest>

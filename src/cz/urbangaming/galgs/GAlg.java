@@ -1,9 +1,6 @@
 package cz.urbangaming.galgs;
 
 import org.ruboto.JRubyAdapter;
-import org.ruboto.RubotoComponent;
-import org.ruboto.ScriptInfo;
-import org.ruboto.ScriptLoader;
 
 import android.app.ActivityManager;
 import android.app.AlertDialog;
@@ -44,6 +41,7 @@ public class GAlg extends FragmentActivity {
     public static final int CONVEX_HULL_GS = 61;
     public static final int LINKED_POINTS = 62;
     public static final int LINKED_POINTS_RUBY = 666;
+    public static final int RED_STAR = 668;
 
     public static final int SWEEP_TRIANGULATION = 63;
     public static final int NAIVE_TRIANGULATION = 64;
@@ -112,6 +110,7 @@ public class GAlg extends FragmentActivity {
         submenu.add(3, CONVEX_HULL_GS, 0, R.string.algorithm_convex_hull_gs);
         submenu.add(3, SWEEP_TRIANGULATION, 0, R.string.algorithm_sweep_triangulation);
         submenu.add(3, NAIVE_TRIANGULATION, 0, R.string.algorithm_naive_triangulation);
+        submenu.add(3, RED_STAR, 0, R.string.algorithm_red_star);
         menu.add(1, LINKED_POINTS, 4, R.string.link_points);
         menu.add(1, LINKED_POINTS_RUBY, 5, R.string.link_points_ruby);
 
@@ -152,8 +151,13 @@ public class GAlg extends FragmentActivity {
             doTheJob(NAIVE_TRIANGULATION);
             break;
         case LINKED_POINTS_RUBY:
+            // TODO: OMG, put it in a thread/task and show some loading animation...
             JRubyAdapter.setUpJRuby(this);
             doTheJob(LINKED_POINTS_RUBY);
+            break;
+        case RED_STAR:
+            JRubyAdapter.setUpJRuby(this);
+            doTheJob(RED_STAR);
             break;
         default:
             itemHandled = false;

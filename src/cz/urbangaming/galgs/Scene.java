@@ -162,7 +162,10 @@ public class Scene {
             results = algorithms.naiveTriangulation(verticesCoords);
             break;
         case GAlg.LINKED_POINTS_RUBY:
-            results = algorithms.manipulateSceneWithRuby(verticesCoords);
+            results = algorithms.manipulateSceneWithRuby(verticesCoords, "link_points");
+            break;
+        case GAlg.RED_STAR:
+            results = algorithms.manipulateSceneWithRuby(verticesCoords, "red_star");
             break;
         default:
             // silence is golden
