@@ -1,5 +1,11 @@
 package cz.urbangaming.galgs;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import org.ruboto.JRubyAdapter;
 
 import android.app.ActivityManager;
@@ -7,8 +13,10 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
+import android.content.res.AssetManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.MotionEventCompat;
@@ -29,6 +37,10 @@ public class GAlg extends FragmentActivity {
     public static final String DEBUG_TAG = "KARM";
 
     private PointsRenderer pointsRenderer = null;
+
+    // Ruby integration
+    public static final String GALGS_CLASS_DIR = Environment.getExternalStorageDirectory().toString() + File.separator + "scripts";
+    public static final String GALGS_CLASS_FILE = "galg_algorithms.rb";
 
     // Menus begin
     public static final int WORK_MODE = 10;
@@ -74,7 +86,48 @@ public class GAlg extends FragmentActivity {
         } else {
             // TODO: Handle as an unrecoverable error and leave the activity somehow...
         }
+
+        // External files preparation
+
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            AssetManager assetManager = getAssets();
+            in = assetManager.open(GALGS_CLASS_FILE);
+            File galgsRubyClassesDirectory = new File(GALGS_CLASS_DIR);
+            galgsRubyClassesDirectory.mkdirs();
+            File outputFile = new File(galgsRubyClassesDirectory, GALGS_CLASS_FILE);
+            out = new FileOutputStream(outputFile);
+            copyFile(in, out);
+            in.close();
+            in = null;
+            out.flush();
+            out.close();
+            out = null;
+        } catch (Exception e) {
+            //We must pop up a notification and scream out loud...
+            Log.e("tag", e.getMessage());
+        }
+
         setContentView(mGLSurfaceView);
+
+    }
+
+    private void copyFile(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        int read;
+        while ((read = in.read(buffer)) != -1) {
+            out.write(buffer, 0, read);
+        }
+    }
+
+    /* Checks if external storage is available for read and write */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {

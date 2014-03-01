@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import cz.urbangaming.galgs.GAlg;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -271,6 +272,7 @@ public class JRubyAdapter {
                 }
 
                 addLoadPath(scriptsDirName(appContext));
+                addLoadPath(GAlg.GALGS_CLASS_DIR);
                 put("$package_name", appContext.getPackageName());
 
                 runScriptlet("::RUBOTO_JAVA_PROXIES = {}");
@@ -386,6 +388,9 @@ public class JRubyAdapter {
         return storageDir.getAbsolutePath() + "/scripts";
     }
 
+    
+    
+    
     private static void setDebugBuild(Context context) {
         PackageManager pm = context.getPackageManager();
         PackageInfo pi;
