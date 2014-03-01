@@ -97,6 +97,9 @@ public class GAlg extends FragmentActivity {
             File galgsRubyClassesDirectory = new File(GALGS_CLASS_DIR);
             galgsRubyClassesDirectory.mkdirs();
             File outputFile = new File(galgsRubyClassesDirectory, GALGS_CLASS_FILE);
+            if(outputFile.exists()) {
+                outputFile = new File(galgsRubyClassesDirectory, GALGS_CLASS_FILE+".orig");
+            }
             out = new FileOutputStream(outputFile);
             copyFile(in, out);
             in.close();
