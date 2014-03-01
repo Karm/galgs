@@ -108,7 +108,8 @@ public class GAlg extends FragmentActivity {
             //We must pop up a notification and scream out loud...
             Log.e("tag", e.getMessage());
         }
-
+        // Stops the thing from trashing the context on pause/resume.
+        mGLSurfaceView.setPreserveEGLContextOnPause(true);
         setContentView(mGLSurfaceView);
 
     }

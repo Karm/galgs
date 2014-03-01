@@ -272,6 +272,8 @@ public class JRubyAdapter {
                 }
 
                 addLoadPath(scriptsDirName(appContext));
+                // Karm: Amazingly, thanks to the classloader, you can reference
+                // any in-apk dependencies from within any loaded script here. Amazing :-)
                 addLoadPath(GAlg.GALGS_CLASS_DIR);
                 put("$package_name", appContext.getPackageName());
 
