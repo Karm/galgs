@@ -1,13 +1,24 @@
 package cz.urbangaming.galgs;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.ruboto.JRubyAdapter;
 
+import android.app.ActionBar;
+import android.app.ActionBar.OnNavigationListener;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -21,10 +32,13 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.MotionEventCompat;
 import android.util.Log;
+import android.view.ActionProvider;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.SubMenu;
+import android.widget.ArrayAdapter;
+import android.widget.Toast;
 import cz.urbangaming.galgs.utils.Point2D;
 
 /**
@@ -33,7 +47,7 @@ import cz.urbangaming.galgs.utils.Point2D;
  * @license GNU GPL 3.0
  * 
  */
-public class GAlg extends FragmentActivity {
+public class GAlg extends FragmentActivity implements OnNavigationListener {
     public static final String DEBUG_TAG = "KARM";
 
     private PointsRenderer pointsRenderer = null;
@@ -60,6 +74,11 @@ public class GAlg extends FragmentActivity {
 
     public static final int REMOVE_ALL_POINTS = 70;
     public static final int ADD_RANDOM_POINTS = 80;
+
+    private ArrayAdapter<String> aAdpt = null;
+    private ActionProvider javaAlgsActionProvider = null;
+    private ActionProvider rubyAlgsActionProvider = null;
+
     // Menus end
 
     private int currentWorkMode = WORK_MODE_ADD;
@@ -73,15 +92,52 @@ public class GAlg extends FragmentActivity {
     public static final int BORDER_POINT_POSITION = Math.round(POINT_SIZE) * 3;
     public static final int HOW_MANY_POINTS_GENERATE = Math.round(POINT_SIZE) * 3;
 
+    // Ruby dynamically generated options
+    private Map<Integer, String> rubyMethods = new HashMap<Integer, String>();
+
+    public static final Pattern pattern = Pattern.compile("[ \\t]*def[ \\t]*galgs_([^(]*)\\(.*");
+    public static final int MAX_METHOD_NAME_LENGTH = 30;
+
+    @Override
+    public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+        if (aAdpt != null && itemPosition == aAdpt.getPosition(getResources().getString(R.string.workmode_add))) {
+            currentWorkMode = WORK_MODE_ADD;
+            return true;
+        } else if (aAdpt != null && itemPosition == aAdpt.getPosition(getResources().getString(R.string.workmode_delete))) {
+            currentWorkMode = WORK_MODE_DELETE;
+            return true;
+        } else if (aAdpt != null && itemPosition == aAdpt.getPosition(getResources().getString(R.string.workmode_edit))) {
+            currentWorkMode = WORK_MODE_EDIT;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        ActionBar actionBar = getActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(false);
+        actionBar.setDisplayShowTitleEnabled(false);
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+
+        ArrayList<String> itemList = new ArrayList<String>();
+        //TODO:Make static, use String constants strings.xml
+        itemList.add(getResources().getString(R.string.workmode_add));
+        itemList.add(getResources().getString(R.string.workmode_edit));
+        itemList.add(getResources().getString(R.string.workmode_delete));
+        this.aAdpt = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, itemList);
+        actionBar.setListNavigationCallbacks(aAdpt, this);
         mGLSurfaceView = new GLSurfaceView(this);
+
         if (detectOpenGLES20()) {
             // Tell the surface view we want to create an OpenGL ES 2.0-compatible
             // context, and set an OpenGL ES 2.0-compatible renderer.
             mGLSurfaceView.setEGLContextClientVersion(2);
-            pointsRenderer = new PointsRenderer();
+            pointsRenderer = new PointsRenderer(this);
             mGLSurfaceView.setRenderer(pointsRenderer);
         } else {
             // TODO: Handle as an unrecoverable error and leave the activity somehow...
@@ -91,36 +147,97 @@ public class GAlg extends FragmentActivity {
 
         InputStream in = null;
         OutputStream out = null;
+        File galgsRubyClassesDirectory = null;
         try {
+            Log.d(DEBUG_TAG, "Media rady: " + isExternalStorageWritable());
+
             AssetManager assetManager = getAssets();
             in = assetManager.open(GALGS_CLASS_FILE);
-            File galgsRubyClassesDirectory = new File(GALGS_CLASS_DIR);
-            galgsRubyClassesDirectory.mkdirs();
-            File outputFile = new File(galgsRubyClassesDirectory, GALGS_CLASS_FILE);
-            if(outputFile.exists()) {
-                outputFile = new File(galgsRubyClassesDirectory, GALGS_CLASS_FILE+".orig");
+            if (in != null) {
+                galgsRubyClassesDirectory = new File(GALGS_CLASS_DIR);
+                galgsRubyClassesDirectory.mkdir();
+                if (!galgsRubyClassesDirectory.isDirectory()) {
+                    Log.d(DEBUG_TAG, "Hmm, " + galgsRubyClassesDirectory + " does not exist, trying mkdirs...");
+                    galgsRubyClassesDirectory.mkdirs();
+                }
+                File outputFile = new File(galgsRubyClassesDirectory, GALGS_CLASS_FILE);
+                if (outputFile.exists()) {
+                    // Load from what user might have edited
+                    outputFile = new File(galgsRubyClassesDirectory, GALGS_CLASS_FILE + ".orig");
+                }
+                out = new FileOutputStream(outputFile);
+                copyFile(in, out);
+                in.close();
+                in = null;
+                out.flush();
+                out.close();
+                out = null;
+            } else {
+                Log.e("IO HELL", "Asset " + GALGS_CLASS_FILE + " not found...");
             }
-            out = new FileOutputStream(outputFile);
-            copyFile(in, out);
-            in.close();
-            in = null;
-            out.flush();
-            out.close();
-            out = null;
-        } catch (Exception e) {
-            //We must pop up a notification and scream out loud...
-            Log.e("tag", e.getMessage());
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
+
+        try {
+            File rbClassFile = new File(galgsRubyClassesDirectory, GALGS_CLASS_FILE);
+            Log.d(DEBUG_TAG, "rbClassFile.getAbsolutePath() " + rbClassFile.getAbsolutePath());
+            Log.d(DEBUG_TAG, "rbClassFile.exists() " + rbClassFile.exists());
+            Log.d(DEBUG_TAG, "rbClassFile.length() " + rbClassFile.length());
+            Log.d(DEBUG_TAG, "rbClassFile.canRead() " + rbClassFile.canRead());
+            Log.d(DEBUG_TAG, "rbClassFile.canWrite() " + rbClassFile.canWrite());
+            FileReader rbClassFileReader = new FileReader(rbClassFile);
+            Log.d(DEBUG_TAG, "rbClassFile " + rbClassFileReader.getEncoding());
+
+            loadRubyMethodsToMenu(new BufferedReader(rbClassFileReader));
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        //JavaAlgs Action provider
+        javaAlgsActionProvider = new JavaAlgsActionProvider(this);
+        //RubyAlgs Action provider
+        Log.d(DEBUG_TAG, "Ruby methods just before creatingProvider:" + rubyMethods);
+
+        rubyAlgsActionProvider = new RubyAlgsActionProvider(this, rubyMethods);
+
         // Stops the thing from trashing the context on pause/resume.
         mGLSurfaceView.setPreserveEGLContextOnPause(true);
         setContentView(mGLSurfaceView);
 
     }
 
+    private void loadRubyMethodsToMenu(BufferedReader bufferedReader) throws IOException, InterruptedException {
+        String line = null;
+        rubyMethods.clear();
+        Log.d(DEBUG_TAG, "I'm in loadRubyMethodsToMenu nad  bufferedReader.read():" + bufferedReader.read());
+
+        while ((line = bufferedReader.readLine()) != null) {
+            Matcher matcher = pattern.matcher(line);
+            if (matcher.matches() && matcher.group(1) != null && matcher.group(1).length() <= MAX_METHOD_NAME_LENGTH) {
+                Log.d(DEBUG_TAG, "Adding method " + matcher.group(1));
+                rubyMethods.put(matcher.group(1).hashCode(), matcher.group(1));
+            } else {
+                Log.d(DEBUG_TAG, "Line [" + line + "] does not contain the expected method...");
+            }
+        }
+        bufferedReader.close();
+    }
+
     private void copyFile(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = new byte[1024];
         int read;
+        Log.d(DEBUG_TAG, "copyFile: in.available():"+in.available());
         while ((read = in.read(buffer)) != -1) {
+            Log.d(DEBUG_TAG, "copyFile: buffer:"+new String(buffer));
             out.write(buffer, 0, read);
         }
     }
@@ -135,61 +252,23 @@ public class GAlg extends FragmentActivity {
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Intentionally left blank
-        return true;
-    }
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.galg, menu);
+        menu.getItem(0).setActionProvider(javaAlgsActionProvider);
+        menu.getItem(1).setActionProvider(rubyAlgsActionProvider);
 
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        menu.clear();
-        SubMenu submenu = menu.addSubMenu(0, WORK_MODE, 0, R.string.work_mode);
-        switch (currentWorkMode) {
-        case WORK_MODE_ADD:
-            submenu.add(0, WORK_MODE_DELETE, 0, R.string.workmode_delete);
-            submenu.add(0, WORK_MODE_EDIT, 1, R.string.workmode_edit);
-            break;
-        case WORK_MODE_DELETE:
-            submenu.add(0, WORK_MODE_ADD, 0, R.string.workmode_add);
-            submenu.add(0, WORK_MODE_EDIT, 1, R.string.workmode_edit);
-            break;
-        case WORK_MODE_EDIT:
-            submenu.add(0, WORK_MODE_ADD, 0, R.string.workmode_add);
-            submenu.add(0, WORK_MODE_DELETE, 1, R.string.workmode_delete);
-            break;
-        default:
-            // nothing
-            break;
-        }
-        menu.add(1, REMOVE_ALL_POINTS, 1, R.string.remove_all_points);
-        menu.add(1, ADD_RANDOM_POINTS, 2, R.string.generate_random_points);
-        submenu = menu.addSubMenu(3, SELECT_ALGORITHM, 3, R.string.select_algorithm);
-        submenu.add(3, CONVEX_HULL_GW, 0, R.string.algorithm_convex_hull_gw);
-        submenu.add(3, CONVEX_HULL_GS, 0, R.string.algorithm_convex_hull_gs);
-        submenu.add(3, SWEEP_TRIANGULATION, 0, R.string.algorithm_sweep_triangulation);
-        submenu.add(3, NAIVE_TRIANGULATION, 0, R.string.algorithm_naive_triangulation);
-        submenu.add(3, RED_STAR, 0, R.string.algorithm_red_star);
-        menu.add(1, LINKED_POINTS, 4, R.string.link_points);
-        menu.add(1, LINKED_POINTS_RUBY, 5, R.string.link_points_ruby);
+        return super.onCreateOptionsMenu(menu);
 
-        return true;
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
         boolean itemHandled = true;
         switch (item.getItemId()) {
-        case WORK_MODE_ADD:
-            currentWorkMode = WORK_MODE_ADD;
-            break;
-        case WORK_MODE_DELETE:
-            currentWorkMode = WORK_MODE_DELETE;
-            break;
-        case WORK_MODE_EDIT:
-            currentWorkMode = WORK_MODE_EDIT;
-            break;
-        case REMOVE_ALL_POINTS:
+        case R.id.remove_all_points:
             pointsRenderer.clearScene();
             break;
-        case ADD_RANDOM_POINTS:
+        case R.id.generate_random_points:
             pointsRenderer.addRandomPoints();
             break;
         case CONVEX_HULL_GW:
@@ -212,18 +291,22 @@ public class GAlg extends FragmentActivity {
             JRubyAdapter.setUpJRuby(this);
             doTheJob(LINKED_POINTS_RUBY);
             break;
-        case RED_STAR:
-            JRubyAdapter.setUpJRuby(this);
-            doTheJob(RED_STAR);
-            break;
         default:
-            itemHandled = false;
+            if (rubyMethods.containsKey(item.getItemId())) {
+                if (!JRubyAdapter.isInitialized()) {
+                    Toast.makeText(this, getResources().getString(R.string.init_jruby_thing), Toast.LENGTH_LONG).show();
+                    JRubyAdapter.setUpJRuby(this);
+                }
+                doTheJob(item.getItemId());
+            } else {
+                itemHandled = false;
+            }
             break;
         }
         return itemHandled;
     }
 
-    private void doTheJob(final int algorithm) {
+    protected void doTheJob(final int algorithm) {
         Thread worker = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -242,6 +325,8 @@ public class GAlg extends FragmentActivity {
         dialog.show(this.getSupportFragmentManager(), "Notice");
     }
 
+    // TODO:
+    // replace this stuff with a simple         Toast.makeText(mContext, item.getTitle(), Toast.LENGTH_SHORT).show();
     private class MyDialogFragment extends DialogFragment {
         String message = null;
 
@@ -287,7 +372,7 @@ public class GAlg extends FragmentActivity {
         int action = MotionEventCompat.getActionMasked(event);
         switch (action) {
         case (MotionEvent.ACTION_DOWN):
-            Point2D point2d = new Point2D(event.getX(), event.getY());
+            Point2D point2d = new Point2D(event.getRawX(), event.getRawY());
             Log.d(DEBUG_TAG, "Action was DOWN " + point2d.toString());
             switch (currentWorkMode) {
             case WORK_MODE_ADD:
@@ -305,7 +390,7 @@ public class GAlg extends FragmentActivity {
             return true;
         case (MotionEvent.ACTION_MOVE):
             if (currentWorkMode == WORK_MODE_EDIT) {
-                pointsRenderer.moveSelectedVertexTo(event.getX(), event.getY());
+                pointsRenderer.moveSelectedVertexTo(event.getRawX(), event.getRawY());
             }
             return true;
         case (MotionEvent.ACTION_UP):
@@ -326,4 +411,8 @@ public class GAlg extends FragmentActivity {
     }
 
     private GLSurfaceView mGLSurfaceView;
+
+    public Map<Integer, String> getRubyMethods() {
+        return rubyMethods;
+    }
 }

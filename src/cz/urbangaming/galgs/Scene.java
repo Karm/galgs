@@ -54,6 +54,7 @@ public class Scene {
     private static final float colorLines[] = { 0f, 1f, 0f, 1.0f };
     private boolean drawLines = false;
     private PointsRenderer pointsRenderer = null;
+    private GAlg galg = null;
 
     // -1 means "none selected" X Y Z index
     private int selectedVertexIndex = -1;
@@ -61,8 +62,10 @@ public class Scene {
 
     private int renderMethod = GLES20.GL_LINE_LOOP;
 
-    public Scene(PointsRenderer pointsRenderer) {
+    public Scene(PointsRenderer pointsRenderer, GAlg galg) {
         this.pointsRenderer = pointsRenderer;
+        this.galg = galg;
+
         newVertexBufferToDraw();
         // prepare shaders and OpenGL program
         int vertexShader = PointsRenderer.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
@@ -161,14 +164,10 @@ public class Scene {
         case GAlg.NAIVE_TRIANGULATION:
             results = algorithms.naiveTriangulation(verticesCoords);
             break;
-        case GAlg.LINKED_POINTS_RUBY:
-            results = algorithms.manipulateSceneWithRuby(verticesCoords, "link_points");
-            break;
-        case GAlg.RED_STAR:
-            results = algorithms.manipulateSceneWithRuby(verticesCoords, "red_star");
-            break;
         default:
-            // silence is golden
+            if (galg.getRubyMethods().containsKey(algorithmUsed)) {
+                results = algorithms.manipulateSceneWithRuby(verticesCoords, "galgs_" + galg.getRubyMethods().get(algorithmUsed));
+            }
             break;
         }
 

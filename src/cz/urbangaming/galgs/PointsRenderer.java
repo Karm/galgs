@@ -24,12 +24,17 @@ class PointsRenderer implements GLSurfaceView.Renderer {
     private int surfaceHeight = 0;
 
     private Scene mScene = null;
+    private GAlg galg = null;
+
+    public PointsRenderer(GAlg galg) {
+        this.galg = galg;
+    }
 
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
         // Set the background frame colorVertices
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        mScene = new Scene(this);
+        mScene = new Scene(this, galg);
     }
 
     @Override
