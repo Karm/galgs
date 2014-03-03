@@ -19,6 +19,7 @@
     <string name="select_algorithm_ruby">Select alg. Ruby</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <string name="reload_ruby_script">Reload galg_algorithms.rb</string>
     <string name="init_jruby_thing">Please wait, I have to initalize JRuby.</string>
     
 </resources>

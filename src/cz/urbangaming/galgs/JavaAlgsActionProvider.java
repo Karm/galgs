@@ -34,10 +34,10 @@ public class JavaAlgsActionProvider extends ActionProvider implements OnMenuItem
         Log.d(this.getClass().getSimpleName(), "onPrepareSubMenu");
         subMenu.clear();
         subMenu.add(0, GAlg.LINKED_POINTS, 0, R.string.link_points);
-        subMenu.add(0, GAlg.CONVEX_HULL_GW, 1, R.string.algorithm_convex_hull_gw).setOnMenuItemClickListener(this);
-        subMenu.add(0, GAlg.CONVEX_HULL_GS, 2, R.string.algorithm_convex_hull_gs).setOnMenuItemClickListener(this);
-        subMenu.add(0, GAlg.SWEEP_TRIANGULATION, 3, R.string.algorithm_sweep_triangulation).setOnMenuItemClickListener(this);
-        subMenu.add(0, GAlg.NAIVE_TRIANGULATION, 4, R.string.algorithm_naive_triangulation).setOnMenuItemClickListener(this);
+        subMenu.add(0, GAlg.CONVEX_HULL_GW, 1, R.string.algorithm_convex_hull_gw);
+        subMenu.add(0, GAlg.CONVEX_HULL_GS, 2, R.string.algorithm_convex_hull_gs);
+        subMenu.add(0, GAlg.SWEEP_TRIANGULATION, 3, R.string.algorithm_sweep_triangulation);
+        subMenu.add(0, GAlg.NAIVE_TRIANGULATION, 4, R.string.algorithm_naive_triangulation);
     }
 
     @Override

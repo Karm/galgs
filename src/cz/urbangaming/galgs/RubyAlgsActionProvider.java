@@ -36,8 +36,8 @@ public class RubyAlgsActionProvider extends ActionProvider implements OnMenuItem
 
     @Override
     public void onPrepareSubMenu(SubMenu subMenu) {
-        Log.d(this.getClass().getSimpleName(), "onPrepareSubMenu");
         subMenu.clear();
+        subMenu.add(1, GAlg.RELOAD_RUBY_SCRIPT, 0, R.string.reload_ruby_script);
         for (int rubyMethodKey : rubyMethods.keySet()) {
             Log.d(GAlg.DEBUG_TAG, "Adding menu item " + rubyMethods.get(rubyMethodKey));
             subMenu.add(1, rubyMethodKey, 0, rubyMethods.get(rubyMethodKey));

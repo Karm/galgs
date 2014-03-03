@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,6 +70,7 @@ public class GAlg extends FragmentActivity implements OnNavigationListener {
 
     public static final int SWEEP_TRIANGULATION = 63;
     public static final int NAIVE_TRIANGULATION = 64;
+    public static final int RELOAD_RUBY_SCRIPT = 162;
 
     public static final int REMOVE_ALL_POINTS = 70;
     public static final int ADD_RANDOM_POINTS = 80;
@@ -78,6 +78,7 @@ public class GAlg extends FragmentActivity implements OnNavigationListener {
     private ArrayAdapter<String> aAdpt = null;
     private ActionProvider javaAlgsActionProvider = null;
     private ActionProvider rubyAlgsActionProvider = null;
+    private File galgsRubyClassesDirectory = null;
 
     // Menus end
 
@@ -147,7 +148,6 @@ public class GAlg extends FragmentActivity implements OnNavigationListener {
 
         InputStream in = null;
         OutputStream out = null;
-        File galgsRubyClassesDirectory = null;
         try {
             Log.d(DEBUG_TAG, "Media rady: " + isExternalStorageWritable());
 
@@ -179,35 +179,6 @@ public class GAlg extends FragmentActivity implements OnNavigationListener {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
-        try {
-            File rbClassFile = new File(galgsRubyClassesDirectory, GALGS_CLASS_FILE);
-            Log.d(DEBUG_TAG, "rbClassFile.getAbsolutePath() " + rbClassFile.getAbsolutePath());
-            Log.d(DEBUG_TAG, "rbClassFile.exists() " + rbClassFile.exists());
-            Log.d(DEBUG_TAG, "rbClassFile.length() " + rbClassFile.length());
-            Log.d(DEBUG_TAG, "rbClassFile.canRead() " + rbClassFile.canRead());
-            Log.d(DEBUG_TAG, "rbClassFile.canWrite() " + rbClassFile.canWrite());
-            FileReader rbClassFileReader = new FileReader(rbClassFile);
-            Log.d(DEBUG_TAG, "rbClassFile " + rbClassFileReader.getEncoding());
-
-            loadRubyMethodsToMenu(new BufferedReader(rbClassFileReader));
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        //JavaAlgs Action provider
-        javaAlgsActionProvider = new JavaAlgsActionProvider(this);
-        //RubyAlgs Action provider
-        Log.d(DEBUG_TAG, "Ruby methods just before creatingProvider:" + rubyMethods);
-
-        rubyAlgsActionProvider = new RubyAlgsActionProvider(this, rubyMethods);
 
         // Stops the thing from trashing the context on pause/resume.
         mGLSurfaceView.setPreserveEGLContextOnPause(true);
@@ -252,6 +223,38 @@ public class GAlg extends FragmentActivity implements OnNavigationListener {
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
+        //TODO: OMG, put this in a separate, non blocking task!!!
+        Log.d(DEBUG_TAG, "CALLED onCreateOptionsMenu!");
+        try {
+            File rbClassFile = new File(galgsRubyClassesDirectory, GALGS_CLASS_FILE);
+            Log.d(DEBUG_TAG, "rbClassFile.getAbsolutePath() " + rbClassFile.getAbsolutePath());
+            Log.d(DEBUG_TAG, "rbClassFile.exists() " + rbClassFile.exists());
+            Log.d(DEBUG_TAG, "rbClassFile.length() " + rbClassFile.length());
+            Log.d(DEBUG_TAG, "rbClassFile.canRead() " + rbClassFile.canRead());
+            Log.d(DEBUG_TAG, "rbClassFile.canWrite() " + rbClassFile.canWrite());
+            FileReader rbClassFileReader = new FileReader(rbClassFile);
+            Log.d(DEBUG_TAG, "rbClassFile " + rbClassFileReader.getEncoding());
+
+            loadRubyMethodsToMenu(new BufferedReader(rbClassFileReader));
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        
+        //JavaAlgs Action provider
+        javaAlgsActionProvider = new JavaAlgsActionProvider(this);
+        //RubyAlgs Action provider
+        Log.d(DEBUG_TAG, "Ruby methods just before creatingProvider:" + rubyMethods);
+
+        rubyAlgsActionProvider = new RubyAlgsActionProvider(this, rubyMethods);
+        
         // Inflate the menu items for use in the action bar
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.galg, menu);
@@ -286,10 +289,8 @@ public class GAlg extends FragmentActivity implements OnNavigationListener {
         case NAIVE_TRIANGULATION:
             doTheJob(NAIVE_TRIANGULATION);
             break;
-        case LINKED_POINTS_RUBY:
-            // TODO: OMG, put it in a thread/task and show some loading animation...
-            JRubyAdapter.setUpJRuby(this);
-            doTheJob(LINKED_POINTS_RUBY);
+        case RELOAD_RUBY_SCRIPT:
+            invalidateOptionsMenu();
             break;
         default:
             if (rubyMethods.containsKey(item.getItemId())) {
