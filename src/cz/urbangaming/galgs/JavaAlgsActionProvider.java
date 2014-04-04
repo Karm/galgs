@@ -8,6 +8,12 @@ import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.SubMenu;
 import android.view.View;
 
+/**
+ * 
+ * @author Michal Karm Babacek
+ * @license GNU GPL 3.0
+ * 
+ */
 public class JavaAlgsActionProvider extends ActionProvider implements OnMenuItemClickListener {
 
     public JavaAlgsActionProvider(Context context) {
@@ -38,6 +44,8 @@ public class JavaAlgsActionProvider extends ActionProvider implements OnMenuItem
         subMenu.add(0, GAlg.CONVEX_HULL_GS, 2, R.string.algorithm_convex_hull_gs);
         subMenu.add(0, GAlg.SWEEP_TRIANGULATION, 3, R.string.algorithm_sweep_triangulation);
         subMenu.add(0, GAlg.NAIVE_TRIANGULATION, 4, R.string.algorithm_naive_triangulation);
+        subMenu.add(0, GAlg.KD_TREE, 4, R.string.kd_tree);
+
     }
 
     @Override

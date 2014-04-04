@@ -10,13 +10,17 @@ import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.SubMenu;
 import android.view.View;
 
+/**
+ * @author Michal Karm Babacek
+ * @license GNU GPL 3.0
+ * 
+ */
 public class RubyAlgsActionProvider extends ActionProvider implements OnMenuItemClickListener {
     private Map<Integer, String> rubyMethods = null;
 
     public RubyAlgsActionProvider(Context context, Map<Integer, String> rubyMethods) {
         super(context);
         this.rubyMethods = rubyMethods;
-
     }
 
     @Override

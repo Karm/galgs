@@ -1,9 +1,5 @@
 package org.ruboto;
 
-import java.io.IOException;
-
-import org.ruboto.ScriptLoader;
-
 public class RubotoBroadcastReceiver extends android.content.BroadcastReceiver implements org.ruboto.RubotoComponent {
     private final ScriptInfo scriptInfo = new ScriptInfo();
 
@@ -34,14 +30,14 @@ public class RubotoBroadcastReceiver extends android.content.BroadcastReceiver i
             }
 
             // FIXME(uwe):  Simplify when we stop support for snake case aliasing interface callback methods.
-            if ((Boolean)JRubyAdapter.runScriptlet(scriptInfo.getRubyClassName() + ".instance_methods(false).any?{|m| m.to_sym == :onReceive}")) {
+            if ((Boolean) JRubyAdapter.runScriptlet(scriptInfo.getRubyClassName() + ".instance_methods(false).any?{|m| m.to_sym == :onReceive}")) {
                 Log.d("onReceive: call method");
-    	        JRubyAdapter.runRubyMethod(this, "onReceive", new Object[]{context, intent});
-            } else if ((Boolean)JRubyAdapter.runScriptlet(scriptInfo.getRubyClassName() + ".instance_methods(false).any?{|m| m.to_sym == :on_receive}")) {
-    	        JRubyAdapter.runRubyMethod(this, "on_receive", new Object[]{context, intent});
+                JRubyAdapter.runRubyMethod(this, "onReceive", new Object[] { context, intent });
+            } else if ((Boolean) JRubyAdapter.runScriptlet(scriptInfo.getRubyClassName() + ".instance_methods(false).any?{|m| m.to_sym == :on_receive}")) {
+                JRubyAdapter.runRubyMethod(this, "on_receive", new Object[] { context, intent });
             }
             // EMXIF
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -20,7 +20,6 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
 public class SplashActivity extends Activity {
     private int splash = 0;
     private ProgressDialog loadingDialog;
@@ -51,7 +50,7 @@ public class SplashActivity extends Activity {
         }
         super.onResume();
     }
-    
+
     public void onPause() {
         Log.d("onPause: ");
         if (receiver != null) {
@@ -69,7 +68,7 @@ public class SplashActivity extends Activity {
             System.exit(0);
         }
     }
-    
+
     private void initJRuby(final boolean firstTime) {
         showProgress();
         new Thread(new Runnable() {
@@ -96,7 +95,7 @@ public class SplashActivity extends Activity {
                                     } catch (Exception e) {
                                     }
                                 } else {
-                                    Toast.makeText(SplashActivity.this,"Failed to initialize Ruboto Core.",Toast.LENGTH_LONG).show();
+                                    Toast.makeText(SplashActivity.this, "Failed to initialize Ruboto Core.", Toast.LENGTH_LONG).show();
                                     try {
                                         TextView textView = (TextView) findViewById(Class.forName(getPackageName() + ".R$id").getField("text").getInt(null));
                                         textView.setText("Woops!  Ruboto Core was installed, but it failed to initialize properly!  I am not sure how to proceed from here.  If you can, please file an error report at http://ruboto.org/");
@@ -210,7 +209,7 @@ public class SplashActivity extends Activity {
     }
 
     private void registerPackageInstallReceiver() {
-        receiver = new BroadcastReceiver(){
+        receiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
                 Log.d("Received intent: " + intent + " (" + intent.getExtras() + ")");
                 if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())) {
@@ -231,16 +230,16 @@ public class SplashActivity extends Activity {
                                 installDownload();
                             } else {
                                 int reason = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_REASON));
-                                Toast.makeText(context,"Download failed (" + status + "): " + reason, Toast.LENGTH_LONG).show();
+                                Toast.makeText(context, "Download failed (" + status + "): " + reason, Toast.LENGTH_LONG).show();
                             }
                         } else {
-                            Toast.makeText(context,"Download diappeared!", Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, "Download diappeared!", Toast.LENGTH_LONG).show();
                         }
                         c.close();
                     }
                 } else if (Intent.ACTION_PACKAGE_ADDED.equals(intent.getAction())) {
                     if (intent.getData().toString().equals("package:org.ruboto.core")) {
-                        Toast.makeText(context,"Ruboto Core is now installed.",Toast.LENGTH_LONG).show();
+                        Toast.makeText(context, "Ruboto Core is now installed.", Toast.LENGTH_LONG).show();
                         deleteFile(RUBOTO_APK);
                         if (receiver != null) {
                             unregisterReceiver(receiver);
@@ -248,11 +247,11 @@ public class SplashActivity extends Activity {
                         }
                         initJRuby(false);
                     } else {
-                        Toast.makeText(context,"Installed: " + intent.getData().toString(),Toast.LENGTH_LONG).show();
+                        Toast.makeText(context, "Installed: " + intent.getData().toString(), Toast.LENGTH_LONG).show();
                     }
                 }
             }
-            };
+        };
         IntentFilter filter = new IntentFilter(Intent.ACTION_PACKAGE_ADDED);
         filter.addDataScheme("package");
         registerReceiver(receiver, filter);
@@ -267,7 +266,7 @@ public class SplashActivity extends Activity {
             java.io.FileOutputStream fos = openFileOutput(RUBOTO_APK, MODE_WORLD_READABLE);
             byte[] buffer = new byte[1024];
             int length;
-            while((length = fileStream.read(buffer)) > 0) {
+            while ((length = fileStream.read(buffer)) > 0) {
                 fos.write(buffer, 0, length);
             }
             fos.flush();
@@ -289,6 +288,7 @@ public class SplashActivity extends Activity {
             installDownload_15();
         }
     }
+
     // EMXIF
 
     // FIXME(uwe): Remove when we stop supporting Android < 4.0.3
@@ -300,6 +300,7 @@ public class SplashActivity extends Activity {
         installIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
         startActivityForResult(installIntent, INSTALL_REQUEST_CODE);
     }
+
     // EMXIF
 
     // FIXME(uwe):  Use constants when we stop suporting Android < 4.0.3
@@ -317,6 +318,7 @@ public class SplashActivity extends Activity {
         installIntent.putExtra("android.intent.extra.RETURN_RESULT", true); // Intent.EXTRA_RETURN_RESULT
         startActivityForResult(installIntent, INSTALL_REQUEST_CODE);
     }
+
     // EMXIF
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -348,16 +350,16 @@ public class SplashActivity extends Activity {
 
     private boolean canInstallFromUnknownSources() {
         Uri settingsUri = Settings.Secure.CONTENT_URI;
-        String[] projection = new String[]{Settings.System.VALUE};
+        String[] projection = new String[] { Settings.System.VALUE };
         String selection = Settings.Secure.NAME + " = ? AND " + Settings.Secure.VALUE + " = ?";
 
         // FIXME(uwe): Use android.provider.Settings.Global.INSTALL_NON_MARKET_APPS
         //             when we stop supporting Android api level < 17
-        String[] selectionArgs = {Settings.Secure.INSTALL_NON_MARKET_APPS, String.valueOf(1)};
+        String[] selectionArgs = { Settings.Secure.INSTALL_NON_MARKET_APPS, String.valueOf(1) };
         // EMXIF
 
         Cursor query = getContentResolver().query(settingsUri, projection,
-                                                  selection, selectionArgs, null);
+                selection, selectionArgs, null);
         return query.getCount() == 1;
     }
 
@@ -368,13 +370,13 @@ public class SplashActivity extends Activity {
         try {
             Cursor c = dm.query(new DownloadManager.Query().setFilterById(enqueue));
             if (c.moveToFirst()) {
-                int soFarIndex =c.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR);
+                int soFarIndex = c.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR);
                 downloadedBytesSoFar = (int) c.getLong(soFarIndex);
                 int totalSizeIndex = c.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES);
                 totalBytes = (int) c.getLong(totalSizeIndex);
             }
             System.out.println("PERCEN ------" + downloadedBytesSoFar
-                               + " ------ " + totalBytes + "****" + percentage);
+                    + " ------ " + totalBytes + "****" + percentage);
             percentage = (downloadedBytesSoFar * 100 / totalBytes);
             System.out.println("percentage % " + percentage);
         } catch (Exception e) {
@@ -385,7 +387,7 @@ public class SplashActivity extends Activity {
 
     private void startUserActivity() {
         if (getIntent().hasExtra(Intent.EXTRA_INTENT)) {
-            startActivity((Intent)getIntent().getParcelableExtra(Intent.EXTRA_INTENT));
+            startActivity((Intent) getIntent().getParcelableExtra(Intent.EXTRA_INTENT));
             finish();
         }
     }

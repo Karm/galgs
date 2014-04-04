@@ -9,6 +9,10 @@ import java.util.List;
 import android.opengl.GLES20;
 import android.util.Log;
 import android.util.Pair;
+import cz.urbangaming.galgs.algorithms.convexhull.GiftWrapping;
+import cz.urbangaming.galgs.algorithms.convexhull.GrahamScan;
+import cz.urbangaming.galgs.algorithms.kdtree.KDTree;
+import cz.urbangaming.galgs.algorithms.triangulation.SweepTriangulation;
 import cz.urbangaming.galgs.utils.Point2D;
 import cz.urbangaming.galgs.utils.Utils;
 
@@ -20,7 +24,7 @@ import cz.urbangaming.galgs.utils.Utils;
  */
 public class Scene {
     private static int counter = 0;
-    private final Algorithms algorithms = new Algorithms();
+    private RubyAlgorithms rubyAlgorithms = null;
     private final String vertexShaderCode =
             "uniform   mat4 uMVPMatrix;" +
                     "attribute vec4 vPosition;" +
@@ -64,6 +68,7 @@ public class Scene {
 
     public Scene(PointsRenderer pointsRenderer, GAlg galg) {
         this.pointsRenderer = pointsRenderer;
+        this.rubyAlgorithms = new RubyAlgorithms();
         this.galg = galg;
 
         newVertexBufferToDraw();
@@ -150,23 +155,26 @@ public class Scene {
         long time = System.currentTimeMillis();
         switch (algorithmUsed) {
         case GAlg.CONVEX_HULL_GW:
-            results = algorithms.convexHullGiftWrapping(verticesCoords);
+            results = GiftWrapping.getInstance().convexHullGiftWrapping(verticesCoords);
             break;
         case GAlg.CONVEX_HULL_GS:
-            results = algorithms.convexHullGrahamScan(verticesCoords);
+            results = GrahamScan.getInstance().convexHullGrahamScan(verticesCoords);
             break;
         case GAlg.LINKED_POINTS:
-            results = algorithms.linkedPoints(verticesCoords);
+            results = new Pair<List<Point2D>, Integer>(verticesCoords, GLES20.GL_LINE_LOOP);
             break;
         case GAlg.SWEEP_TRIANGULATION:
-            results = algorithms.sweepTriangulation(verticesCoords);
+            results = SweepTriangulation.getInstance().sweepTriangulation(verticesCoords);
             break;
         case GAlg.NAIVE_TRIANGULATION:
-            results = algorithms.naiveTriangulation(verticesCoords);
+            results = SweepTriangulation.getInstance().naiveTriangulation(verticesCoords);
+            break;
+        case GAlg.KD_TREE:
+            results = new KDTree(pointsRenderer.getSurfaceWidth(), pointsRenderer.getSurfaceHeight()).buildKDTree(verticesCoords);
             break;
         default:
             if (galg.getRubyMethods().containsKey(algorithmUsed)) {
-                results = algorithms.manipulateSceneWithRuby(verticesCoords, "galgs_" + galg.getRubyMethods().get(algorithmUsed));
+                results = rubyAlgorithms.manipulateSceneWithRuby(verticesCoords, "galgs_" + galg.getRubyMethods().get(algorithmUsed));
             }
             break;
         }

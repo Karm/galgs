@@ -21,5 +21,6 @@
     <string name="hello_world">Hello world!</string>
     <string name="reload_ruby_script">Reload galg_algorithms.rb</string>
     <string name="init_jruby_thing">Please wait, I have to initalize JRuby.</string>
-    
+    <string name="kd_tree">KD-Tree</string>
+
 </resources>

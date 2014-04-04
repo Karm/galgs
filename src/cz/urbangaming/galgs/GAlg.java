@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 
 import org.ruboto.JRubyAdapter;
 
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.ActionBar.OnNavigationListener;
 import android.app.ActivityManager;
@@ -70,6 +71,7 @@ public class GAlg extends FragmentActivity implements OnNavigationListener {
 
     public static final int SWEEP_TRIANGULATION = 63;
     public static final int NAIVE_TRIANGULATION = 64;
+    public static final int KD_TREE = 65;
     public static final int RELOAD_RUBY_SCRIPT = 162;
 
     public static final int REMOVE_ALL_POINTS = 70;
@@ -94,6 +96,7 @@ public class GAlg extends FragmentActivity implements OnNavigationListener {
     public static final int HOW_MANY_POINTS_GENERATE = Math.round(POINT_SIZE) * 3;
 
     // Ruby dynamically generated options
+    @SuppressLint("UseSparseArrays")
     private Map<Integer, String> rubyMethods = new HashMap<Integer, String>();
 
     public static final Pattern pattern = Pattern.compile("[ \\t]*def[ \\t]*galgs_([^(]*)\\(.*");
@@ -289,6 +292,9 @@ public class GAlg extends FragmentActivity implements OnNavigationListener {
         case NAIVE_TRIANGULATION:
             doTheJob(NAIVE_TRIANGULATION);
             break;
+        case KD_TREE:
+            doTheJob(KD_TREE);
+            break;
         case RELOAD_RUBY_SCRIPT:
             invalidateOptionsMenu();
             break;
@@ -307,6 +313,9 @@ public class GAlg extends FragmentActivity implements OnNavigationListener {
         return itemHandled;
     }
 
+    //WRONG!!! What about onPause and onResume?
+    // What about user clicking the button several times in a row?
+    // Must re-think this bit... 
     protected void doTheJob(final int algorithm) {
         Thread worker = new Thread(new Runnable() {
             @Override

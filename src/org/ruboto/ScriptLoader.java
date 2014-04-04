@@ -4,17 +4,15 @@ import java.io.IOException;
 import java.util.Map;
 
 import android.app.ProgressDialog;
-import android.content.Context;
-import android.os.Bundle;
 
 public class ScriptLoader {
-   /**
-    Return true if we are called from JRuby.
-    */
+    /**
+     * Return true if we are called from JRuby.
+     */
     public static boolean isCalledFromJRuby() {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         int maxLookBack = Math.min(8, stackTraceElements.length);
-        for(int i = 0; i < maxLookBack ; i++){
+        for (int i = 0; i < maxLookBack; i++) {
             if (stackTraceElements[i].getClassName().startsWith("org.jruby.javasupport.JavaMethod")) {
                 return true;
             }
@@ -72,7 +70,7 @@ public class ScriptLoader {
                             Log.d("Set class: " + rubyClass);
                             JRubyAdapter.put(component.getScriptInfo().getRubyClassName(), rubyClass);
                             // FIXME(uwe):  Collect these threads in a ThreadGroup ?
-                            Thread t = new Thread(null, new Runnable(){
+                            Thread t = new Thread(null, new Runnable() {
                                 public void run() {
                                     long loadStart = System.currentTimeMillis();
                                     JRubyAdapter.setScriptFilename(rubyScript.getAbsolutePath());
@@ -83,7 +81,7 @@ public class ScriptLoader {
                             try {
                                 t.start();
                                 t.join();
-                            } catch(InterruptedException ie) {
+                            } catch (InterruptedException ie) {
                                 Thread.currentThread().interrupt();
                                 throw new RuntimeException("Interrupted loading script.", ie);
                             }
@@ -107,7 +105,7 @@ public class ScriptLoader {
                 component.getScriptInfo().setRubyInstance(rubyInstance);
             }
             persistObjectProxy(component);
-        } catch(IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
             if (component instanceof android.content.Context) {
                 ProgressDialog.show((android.content.Context) component, "Script failed", "Something bad happened", true, true);
@@ -122,7 +120,7 @@ public class ScriptLoader {
     }
 
     public static void unloadScript(RubotoComponent component) {
-        ((Map)JRubyAdapter.get("RUBOTO_JAVA_PROXIES")).remove(component.getScriptInfo().getRubyInstance());
+        ((Map) JRubyAdapter.get("RUBOTO_JAVA_PROXIES")).remove(component.getScriptInfo().getRubyInstance());
     }
 
 }

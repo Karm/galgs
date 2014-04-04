@@ -40,7 +40,7 @@ public class ScriptInfo {
     public String getRubyClassName() {
         if (rubyClassName == null && scriptName != null) {
             return Script.toCamelCase(scriptName);
-         }
+        }
         return rubyClassName;
     }
 

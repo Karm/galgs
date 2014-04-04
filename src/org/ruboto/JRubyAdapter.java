@@ -1,18 +1,16 @@
 package org.ruboto;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import cz.urbangaming.galgs.GAlg;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.os.Environment;
+import cz.urbangaming.galgs.GAlg;
 import dalvik.system.PathClassLoader;
 
 public class JRubyAdapter {
@@ -165,7 +163,8 @@ public class JRubyAdapter {
                 classLoader = JRubyAdapter.class.getClassLoader();
                 try {
                     apkName = appContext.getPackageManager().getApplicationInfo(appContext.getPackageName(), 0).sourceDir;
-                } catch (NameNotFoundException e) {}
+                } catch (NameNotFoundException e) {
+                }
             } catch (ClassNotFoundException e1) {
                 String packageName = "org.ruboto.core";
                 try {
@@ -218,7 +217,7 @@ public class JRubyAdapter {
                 //
 
                 if (out != null) {
-                  output = out;
+                    output = out;
                 }
 
                 //////////////////////////////////
@@ -250,9 +249,9 @@ public class JRubyAdapter {
                 Class behaviorClass = Class.forName("org.jruby.embed.LocalVariableBehavior", true, scriptingContainerClass.getClassLoader());
 
                 ruby = scriptingContainerClass
-                         .getConstructor(scopeClass, behaviorClass)
-                         .newInstance(Enum.valueOf(scopeClass, localContextScope), 
-                                      Enum.valueOf(behaviorClass, localVariableBehavior));
+                        .getConstructor(scopeClass, behaviorClass)
+                        .newInstance(Enum.valueOf(scopeClass, localContextScope),
+                                Enum.valueOf(behaviorClass, localVariableBehavior));
 
                 // FIXME(uwe): Write tutorial on profiling.
                 // container.getProvider().getRubyInstanceConfig().setProfilingMode(mode);
@@ -353,13 +352,15 @@ public class JRubyAdapter {
     }
 
     // FIXME(uwe):  Remove when we stop supporting Ruby 1.8
-    @Deprecated public static boolean isRubyOneEight() {
-        return ((String)get("RUBY_VERSION")).startsWith("1.8.");
+    @Deprecated
+    public static boolean isRubyOneEight() {
+        return ((String) get("RUBY_VERSION")).startsWith("1.8.");
     }
 
     // FIXME(uwe):  Remove when we stop supporting Ruby 1.8
-    @Deprecated public static boolean isRubyOneNine() {
-    String rv = ((String)get("RUBY_VERSION"));
+    @Deprecated
+    public static boolean isRubyOneNine() {
+        String rv = ((String) get("RUBY_VERSION"));
         return rv.startsWith("2.1.") || rv.startsWith("2.0.") || rv.startsWith("1.9.");
     }
 
@@ -369,10 +370,10 @@ public class JRubyAdapter {
         //try {
         //    t.printStackTrace(output);
         //} catch (NullPointerException npe) {
-            // TODO(uwe): printStackTrace should not fail
-            for (java.lang.StackTraceElement ste : t.getStackTrace()) {
-                output.append(ste.toString() + "\n");
-            }
+        // TODO(uwe): printStackTrace should not fail
+        for (java.lang.StackTraceElement ste : t.getStackTrace()) {
+            output.append(ste.toString() + "\n");
+        }
         //}
     }
 
@@ -390,9 +391,6 @@ public class JRubyAdapter {
         return storageDir.getAbsolutePath() + "/scripts";
     }
 
-    
-    
-    
     private static void setDebugBuild(Context context) {
         PackageManager pm = context.getPackageManager();
         PackageInfo pi;
@@ -413,26 +411,26 @@ public class JRubyAdapter {
     }
 
     public static void setOutputStream(PrintStream out) {
-      if (ruby == null) {
-        output = out;
-      } else {
-        try {
-          Method setOutputMethod = ruby.getClass().getMethod("setOutput", PrintStream.class);
-          setOutputMethod.invoke(ruby, out);
-          Method setErrorMethod = ruby.getClass().getMethod("setError", PrintStream.class);
-          setErrorMethod.invoke(ruby, out);
-        } catch (IllegalArgumentException e) {
-            handleInitException(e);
-        } catch (SecurityException e) {
-            handleInitException(e);
-        } catch (IllegalAccessException e) {
-            handleInitException(e);
-        } catch (InvocationTargetException e) {
-            handleInitException(e);
-        } catch (NoSuchMethodException e) {
-            handleInitException(e);
+        if (ruby == null) {
+            output = out;
+        } else {
+            try {
+                Method setOutputMethod = ruby.getClass().getMethod("setOutput", PrintStream.class);
+                setOutputMethod.invoke(ruby, out);
+                Method setErrorMethod = ruby.getClass().getMethod("setError", PrintStream.class);
+                setErrorMethod.invoke(ruby, out);
+            } catch (IllegalArgumentException e) {
+                handleInitException(e);
+            } catch (SecurityException e) {
+                handleInitException(e);
+            } catch (IllegalAccessException e) {
+                handleInitException(e);
+            } catch (InvocationTargetException e) {
+                handleInitException(e);
+            } catch (NoSuchMethodException e) {
+                handleInitException(e);
+            }
         }
-      }
     }
 
 }
